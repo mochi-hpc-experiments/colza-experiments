@@ -10,7 +10,7 @@
 
 export MPICH_GNI_NDREG_ENTRIES=1024
 
-HERE=`dirname $0`
+HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
 
 function print_log() {
@@ -28,8 +28,8 @@ function run_instance () {
               -a ofi+gni \
               -v trace \
               -s colza.ssg \
-              -t 1 \
-              -c pipeline.json > $OUTFILE 2>&1 &
+              -c $HERE/pipeline.json \
+              -t 1 > $OUTFILE 2>&1 &
     SRUN_PID=$!
     print_log "Waiting $WAITTIME seconds"
     sleep $WAITTIME
@@ -46,7 +46,7 @@ print_log "Loading spack"
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
 
-for NPROCS in {1..4}
+for NPROCS in 1 # {1..4}
 do
     run_instance $NPROCS 30
 done

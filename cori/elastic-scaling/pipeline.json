@@ -1,7 +1,7 @@
 {
     "pipelines" : {
         "abc" : {
-            "library" : "examples/pipeline/libcolza-dummy-pipeline.so",
+            "library" : "libcolza-dummy-pipeline.so",
             "type" : "dummy",
             "config" : {}
         }
