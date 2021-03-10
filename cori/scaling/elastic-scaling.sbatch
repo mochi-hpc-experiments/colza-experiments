@@ -2,11 +2,11 @@
 #SBATCH --job-name=ColzaSSG
 #SBATCH --qos=debug
 #SBATCH --time=00:30:00
-#SBATCH --nodes=4
+#SBATCH --nodes=5
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=32
 #SBATCH --constraint=haswell
-#SBATCH --output="static-scaling-%j.out"
+#SBATCH --output="elastic-scaling-%j.out"
 
 export MPICH_GNI_NDREG_ENTRIES=1024
 
@@ -21,12 +21,17 @@ function print_log() {
     echo "[$NOW] $MSG"
 }
 
-function run_instance () {
-    NPROCS=$1
+function add_instance () {
+    INSTANCE_NUMBER=$1
     WAITTIME=$2
-    OUTFILE=static.$NPROCS.$SLURM_JOB_ID.out
-    print_log "Starting staging area on $NPROCS processes"
-    srun -n $NPROCS colza-dist-server \
+    OUTFILE=elastic.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
+    print_log "Starting process $INSTANCE_NUMBER of staging area"
+    if [ "$INSTANCE_NUMBER" -eq "1" ]; then
+        JOIN=""
+    else
+        JOIN="-j"
+    fi
+    srun -n 1 colza-dist-server $JOIN \
               -a ofi+gni \
               -v trace \
               -s $SSG_FILENAME \
@@ -35,12 +40,7 @@ function run_instance () {
     SRUN_PID=$!
     print_log "Waiting $WAITTIME seconds"
     sleep $WAITTIME
-    print_log "Killing staging area"
-    kill $SRUN_PID
-    print_log "Waiting for staging area to shut down"
-    wait $SRUN_PID
     print_log "Done!"
-    rm $SSG_FILENAME
 }
 
 print_log "Loading spack"
@@ -49,7 +49,17 @@ print_log "Loading spack"
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
 
-for NPROCS in 1..4
+for P in {1..4}
 do
-    run_instance $NPROCS 30
+    add_instance $P 30
 done
+
+print_log "Shutting down the staging area"
+srun -n 1 colza-dist-admin \
+            -a ofi+gni \
+            -v trace \
+            -s $SSG_FILENAME \
+            -x shutdown
+print_log "Experiment complete"
+
+rm $SSG_FILENAME
