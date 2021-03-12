@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=ColzaSSG
-#SBATCH --qos=debug
-#SBATCH --time=00:30:00
-#SBATCH --nodes=4
+#SBATCH --qos=regular
+#SBATCH --time=04:00:00
+#SBATCH --nodes=128
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=32
 #SBATCH --constraint=haswell
@@ -30,6 +30,7 @@ function run_instance () {
               -a ofi+gni \
               -v trace \
               -s $SSG_FILENAME \
+              -p 500 \
               -c $HERE/pipeline.json \
               -t 1 > $OUTFILE 2>&1 &
     SRUN_PID=$!
@@ -49,7 +50,7 @@ print_log "Loading spack"
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
 
-for NPROCS in 1..4
+for NPROCS in {1..127}
 do
-    run_instance $NPROCS 30
+    run_instance $NPROCS 60
 done

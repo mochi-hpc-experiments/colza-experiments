@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=ColzaSSG
-#SBATCH --qos=debug
-#SBATCH --time=00:30:00
-#SBATCH --nodes=5
+#SBATCH --qos=regular
+#SBATCH --time=02:00:00
+#SBATCH --nodes=128
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=32
 #SBATCH --constraint=haswell
@@ -34,6 +34,7 @@ function add_instance () {
     srun -n 1 colza-dist-server $JOIN \
               -a ofi+gni \
               -v trace \
+              -p 500 \
               -s $SSG_FILENAME \
               -c $HERE/pipeline.json \
               -t 1 > $OUTFILE 2>&1 &
@@ -49,7 +50,7 @@ print_log "Loading spack"
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
 
-for P in {1..4}
+for P in {1..127}
 do
     add_instance $P 30
 done
