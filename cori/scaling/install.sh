@@ -39,10 +39,12 @@ else
     echo "====> Using existing Mochi package repository"
 fi
 
-echo "====> Adding Mochi namespace"
-spack repo add $COLZA_EXP_MOCHI_LOCATION/mochi-packages
 
 echo "====> Setting up Colza environment"
 spack env create $COLZA_EXP_SPACK_ENV $HERE/spack.yaml
+echo "====> Activating environment"
 spack env activate $COLZA_EXP_SPACK_ENV
+echo "====> Adding Mochi namespace"
+spack repo add --scope env:$COLZA_EXP_SPACK_ENV $COLZA_EXP_MOCHI_LOCATION/mochi-packages
+echo "====> Installing"
 spack install
