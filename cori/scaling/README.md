@@ -21,9 +21,30 @@ guarantee reproducible experiments if you choose to do so).
 
 ## Running
 
-The _static_ and elastic experiments can be run as follows.
+The _static_ and _elastic_ experiments can be run as follows.
 
 ```
 $ sbatch static-scaling.sbatch
 $ sbatch elastic-scaling.sbatch
 ```
+
+## Analyzing
+
+The static experiment will produce a log file named `static-scaling-<jobid>.out`
+as well as a list of 127 files named `static.<scale>.<jobid>.out` where `<scale>`
+is the number of processes deployed. Running `python parse-static.py <jobid>`
+will produce CSV data on the standard output. The first column corresponds to
+the scale at which the staging area was deploy. The second column corresponds
+to the time required (in seconds) to go from a staging area with one fewer
+node to the current scale (i.e. the time from killing the previous staging area
+to having the new one deployed and ready to accept work).
+
+The elastic experiment will produce a log file named `elastic-scaling-<jobid>.out`
+as well as a list of 127 files named `elastic.<proc>.<jobid>.out`. Contrary to
+the files produced by the static experiments, each such file here corresponds to
+the log file of a single process throughout the full experiment (since process
+are not killed). Running `python parse-elastic.py <jobid>` will produce CSV data
+on the standard output. The first column corresponds to the scale of the staging
+area. The second column corresponds to the time required (in seconds) to add
+a new process to the staging area to reach that scale from a scale with one fewer
+process.
