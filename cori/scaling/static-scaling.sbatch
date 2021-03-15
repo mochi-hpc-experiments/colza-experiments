@@ -10,6 +10,8 @@
 
 export MPICH_GNI_NDREG_ENTRIES=1024
 
+INCR=${1:-1}
+
 HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
 
@@ -50,7 +52,16 @@ print_log "Loading spack"
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
 
-for NPROCS in {1..127}
+for (( NPROCS=$INCR; NPROCS <= 127;  NPROCS=$NPROCS+$INCR ))
 do
     run_instance $NPROCS 60
 done
+
+print_log "Experiment done"
+
+print_log "Parsing results and creating CSV file"
+python $HERE/parse-static.py $SLURM_JOB_ID > static-$SLURM_JOB_ID.csv
+
+print_log "Moving log files"
+mkdir logs-$SLURM_JOB_ID
+mv static.*.out logs-$SLURM_JOB_ID

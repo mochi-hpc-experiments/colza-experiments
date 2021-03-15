@@ -10,6 +10,8 @@
 
 export MPICH_GNI_NDREG_ENTRIES=1024
 
+INCR=${1:-1}
+
 HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
 
@@ -31,7 +33,7 @@ function add_instance () {
     else
         JOIN="-j"
     fi
-    srun -n 1 colza-dist-server $JOIN \
+    srun -n $INCR colza-dist-server $JOIN \
               -a ofi+gni \
               -v trace \
               -p 500 \
@@ -50,7 +52,7 @@ print_log "Loading spack"
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
 
-for P in {1..127}
+for (( P=$INCR; P <= 127;  P=$P+$INCR ))
 do
     add_instance $P 30
 done
@@ -63,4 +65,11 @@ srun -n 1 colza-dist-admin \
             -x shutdown
 print_log "Experiment complete"
 
+print_log "Parsing results and creating CSV file"
+python $HERE/parse-elastic.py $SLURM_JOB_ID > elastic-$SLURM_JOB_ID.csv
+
 rm $SSG_FILENAME
+
+print_log "Moving log files"
+mkdir logs-$SLURM_JOB_ID
+mv elastic.*.out logs-$SLURM_JOB_ID
