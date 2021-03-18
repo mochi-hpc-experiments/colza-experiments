@@ -12,10 +12,10 @@ The script looks for the following types of lines in the staging area logs:
 [2021-03-10 15:54:05.538] [trace] Mona addresses have been updated, group size is now 2
 (printed when the process has successfully added a member to its group)
 
-The time to rescale from N processes to N+1 is measure as the time
-between the "Starting process N+1" message in the script's log file,
-and the last "Mona addresses have been updated" message from all the
-processes running at this scale.
+The time to rescale from N processes to M is measure as the time
+between the "Starting process M" message in the script's log file,
+and the last "Mona addresses have been updated, group size is now M" message
+from all the processes.
 
 The script outputs CSV data on its standard output. Each line contains two
 columns: <size>, <time>
@@ -31,6 +31,7 @@ import datetime
 date_re = re.compile('^\[(\d\d\d\d)-(\d\d)-(\d\d)\s(\d\d):(\d\d):(\d\d.\d+)\]')
 
 def parse_time(line):
+    """Get the timestamp from a line."""
     m = date_re.match(line)
     if m is None:
         return None
@@ -46,43 +47,75 @@ def parse_time(line):
         int((second - int(second))*1000000))
     return date
 
-def find_ready_times(filename, rank, expected_num_lines):
-    result = []
+
+def parse_file(filename):
+    """Parse a single file, generate a list of tuples
+    either in the form (t, 'starting', n) or (t, 'ready', n)."""
+    events = []
     for line in open(filename):
-        if 'Mona addresses have been updated' not in line:
-            continue
-        t = parse_time(line)
-        result.append(t)
-    if len(result) < expected_num_lines:
-        print("WARNING: adding %d line for process %d" % (expected_num_lines - len(result), rank))
-    while len(result) < expected_num_lines:
-        result.append(result[-1])
-    return result
+        if 'Starting process' in line:
+            t = parse_time(line)
+            n = int(line.split()[4])
+            events.append((t, 'starting', n))
+        elif 'Mona addresses have been updated' in line:
+            t = parse_time(line)
+            n = int(line.split()[-1])
+            events.append((t, 'ready', n))
+    return events
 
-def find_last_ready_times(ready_times, num_procs):
-    times = [ ready_times[i][num_procs-1-i] for i in range(0, num_procs) ]
-    return max(times)
 
-if len(sys.argv) != 2:
-    print('Usage: python parse-elastic.py <job-id>')
-    sys.exit(-1)
+def parse_all_files(filenames):
+    """Parse a list of files, sort and merge their events."""
+    events = []
+    for filename in sys.argv[1:]:
+        events.extend(parse_file(filename))
+    events.sort()
+    return events
 
-job_id = int(sys.argv[1])
-job_out_filename = 'elastic-scaling-%d.out' % job_id
 
-start_times = []
-for line in open(job_out_filename):
-    if 'Starting process' in line:
-        t = parse_time(line)
-        start_times.append(t)
+def purge_events(events):
+    """Remove events that are not needed (i.e. 'ready' events
+    not corresponding to a 'starting' line)."""
+    started = []
+    kept = []
+    for e in events:
+        if e[1] == 'starting':
+            started.append(e[2])
+            kept.append(e)
+        else:
+            if e[2] in started:
+                kept.append(e)
+    return kept
 
-ready_times = []
-for i in range(1, len(start_times)+1):
-    logfile = 'elastic.%d.%d.out' % (i, job_id)
-    ts = find_ready_times(logfile, i, len(start_times)-i+1)
-    ready_times.append(ts)
+def find_latest_times(events):
+    """Build the dictionary associating a number of processes with
+    the corresponding 'starting' time and the last 'ready' time."""
+    timings = dict()
+    for e in events:
+        t = e[0]
+        w = e[1]
+        n = e[2]
+        if n not in timings:
+            timings[n] = [None, None]
+        if w == 'starting':
+            timings[n][0] = t
+        else:
+            timings[n][1] = t
+    return timings
 
-for i in range(1, len(start_times)+1):
-    ready_time = find_last_ready_times(ready_times, i)
-    t = (ready_time - start_times[i-1]).total_seconds()
-    print('%d,%f' % (i, t))
+
+def print_as_csv(timings):
+    """Takes the timings dictionary computed by find_latest_times
+    and print the result as CSV on stdout."""
+    for n in sorted(timings.keys()):
+        v = timings[n]
+        t = (v[1] - v[0]).total_seconds()
+        print(n, t)
+
+print_as_csv(
+    find_latest_times(
+        purge_events(
+            parse_all_files(sys.argv[1:])
+        )
+    )
+)

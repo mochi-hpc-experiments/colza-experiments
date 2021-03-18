@@ -25,10 +25,11 @@ function print_log() {
 
 function add_instance () {
     INSTANCE_NUMBER=$1
+    CREATE_GROUP=$3
     WAITTIME=$2
     OUTFILE=elastic.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
     print_log "Starting process $INSTANCE_NUMBER of staging area"
-    if [ "$INSTANCE_NUMBER" -eq "1" ]; then
+    if [ "$CREATE_GROUP" -eq "1" ]; then
         JOIN=""
     else
         JOIN="-j"
@@ -52,9 +53,12 @@ print_log "Loading spack"
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
 
+CREATE_GROUP=1 # first call must create the group
+
 for (( P=$INCR; P <= 127;  P=$P+$INCR ))
 do
-    add_instance $P 30
+    add_instance $P 30 $CREATE_GROUP
+    CREATE_GROUP=0
 done
 
 print_log "Shutting down the staging area"
@@ -66,10 +70,10 @@ srun -n 1 colza-dist-admin \
 print_log "Experiment complete"
 
 print_log "Parsing results and creating CSV file"
-python $HERE/parse-elastic.py $SLURM_JOB_ID > elastic-$SLURM_JOB_ID.csv
+python $HERE/parse-elastic.py elastic*.$SLURM_JOB_ID.out > elastic-$SLURM_JOB_ID.csv
 
 rm $SSG_FILENAME
 
 print_log "Moving log files"
 mkdir logs-$SLURM_JOB_ID
-mv elastic.*.out logs-$SLURM_JOB_ID
+mv elastic*$SLURM_JOB_ID.out logs-$SLURM_JOB_ID
