@@ -1,0 +1,9 @@
+{
+    "pipelines" : {
+        "monabackend" : {
+            "library" : "libmonabackend-pipeline.so",
+            "type" : "monabackend",
+            "config" : {}
+        }
+    }
+}
