@@ -32,12 +32,14 @@ function add_instance () {
     WAITTIME=$2
     OUTFILE=mandelbulb.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
     print_log "Starting process $INSTANCE_NUMBER of staging area"
+    NP=$INCR
     if [ "$CREATE_GROUP" -eq "1" ]; then
         JOIN=""
+        NP=$START
     else
         JOIN="-j"
     fi
-    srun -n $INCR colza-dist-server $JOIN \
+    srun -n $NP colza-dist-server $JOIN \
               -a ofi+gni \
               -v trace \
               -p 1000 \
