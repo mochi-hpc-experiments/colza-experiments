@@ -34,7 +34,7 @@ fi
 
 if [ ! -d $COLZA_EXP_MOCHI_LOCATION/sds-repo ]; then
     echo "====> Cloning Mochi namespace"
-    git clone https://xgitlab.cels.anl.gov/sds/sds-repo $COLZA_EXP_MOCHI_LOCATION/mochi-packages
+    git clone https://github.com/mochi-hpc/mochi-spack-packages.git $COLZA_EXP_MOCHI_LOCATION/mochi-packages
 else
     echo "====> Using existing Mochi package repository"
 fi
