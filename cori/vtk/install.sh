@@ -131,7 +131,7 @@ function install_mochi {
         exit -1
     fi
     echo "====> Cloning Mochi namespace"
-    git clone https://xgitlab.cels.anl.gov/sds/sds-repo $COLZA_EXP_MOCHI_LOCATION
+    git clone https://github.com/mochi-hpc/mochi-spack-packages.git $COLZA_EXP_MOCHI_LOCATION
 }
 
 function install_colza {
@@ -163,6 +163,7 @@ function install_mini_apps {
     echo "====> Building mini apps"
     spack env activate $COLZA_EXP_SPACK_ENV
     pushd $MINIAPP_SOURCE_PATH
+    git checkout debug
     if [ ! -d build ]; then
         mkdir build
     else

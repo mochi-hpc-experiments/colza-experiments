@@ -2,7 +2,7 @@
 #SBATCH --job-name=ColzaMandelbulb
 #SBATCH --qos=debug
 #SBATCH --time=00:30:00
-#SBATCH --nodes=4
+#SBATCH --nodes=16
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=32
 #SBATCH --constraint=haswell
@@ -15,6 +15,10 @@ START=${2:-${INCR}}
 
 HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
+
+
+export SCRIPTPATH="src/mini-apps/example/MandelbulbColza/pipeline/render.py"
+export BLOCKNUM=64
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/mini-apps/lib
 
@@ -55,16 +59,33 @@ function add_instance () {
 print_log "Loading spack"
 . $COLZA_EXP_SPACK_LOCATION/share/spack/setup-env.sh
 
+module load mesa@18.3.6
+
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
 
-CREATE_GROUP=1 # first call must create the group
+add_instance $START 60 1
 
-for (( P=$START; P <= 3;  P=$P+$INCR ))
+print_log "Starting client"
+srun -n 1 ./sw/mini-apps/bin/example/MandelbulbColza/mbclient \
+            -a ofi+gni \
+            -v trace \
+            -s $SSG_FILENAME \
+            -p monabackend \
+            -b $BLOCKNUM \
+            -t 1200 2>&1 > mandelbulb.client.$SLURM_JOB_ID.out &
+CLIENT_PID=$!
+
+print_log "Waiting 60 seconds"
+sleep 60
+
+for (( P=$START+$INCR; P <= 15;  P=$P+$INCR ))
 do
-    add_instance $P 60 $CREATE_GROUP
-    CREATE_GROUP=0
+    add_instance $P 60 0
 done
+
+print_log "Waiting for client to terminate"
+wait $CLIENT_PID
 
 print_log "Shutting down the staging area"
 srun -n 1 colza-dist-admin \
