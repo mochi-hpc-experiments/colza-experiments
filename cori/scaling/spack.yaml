@@ -1,5 +1,6 @@
 spack:
   specs:
+  - mochi-margo@0.9.3
   - mochi-colza +examples +drc @main %gcc@9.3.0
   concretization: together
   compilers:

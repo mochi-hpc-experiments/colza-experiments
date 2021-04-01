@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=ColzaSSG
 #SBATCH --qos=regular
-#SBATCH --time=02:00:00
+#SBATCH --time=00:30:00
 #SBATCH --nodes=128
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=32
@@ -11,6 +11,7 @@
 export MPICH_GNI_NDREG_ENTRIES=1024
 
 INCR=${1:-1}
+START=${2:-${INCR}}
 
 HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
@@ -29,12 +30,14 @@ function add_instance () {
     WAITTIME=$2
     OUTFILE=elastic.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
     print_log "Starting process $INSTANCE_NUMBER of staging area"
+    NP=$INCR
     if [ "$CREATE_GROUP" -eq "1" ]; then
         JOIN=""
+        NP=$START
     else
         JOIN="-j"
     fi
-    srun -n $INCR colza-dist-server $JOIN \
+    srun -n $NP colza-dist-server $JOIN \
               -a ofi+gni \
               -v trace \
               -p 500 \
@@ -55,7 +58,7 @@ spack env activate $COLZA_EXP_SPACK_ENV
 
 CREATE_GROUP=1 # first call must create the group
 
-for (( P=$INCR; P <= 127;  P=$P+$INCR ))
+for (( P=$START; P <= 127;  P=$P+$INCR ))
 do
     add_instance $P 30 $CREATE_GROUP
     CREATE_GROUP=0
@@ -69,11 +72,12 @@ srun -n 1 colza-dist-admin \
             -x shutdown
 print_log "Experiment complete"
 
-print_log "Parsing results and creating CSV file"
-python $HERE/parse-elastic.py elastic*.$SLURM_JOB_ID.out > elastic-$SLURM_JOB_ID.csv
-
 rm $SSG_FILENAME
 
 print_log "Moving log files"
 mkdir logs-$SLURM_JOB_ID
 mv elastic*$SLURM_JOB_ID.out logs-$SLURM_JOB_ID
+
+print_log "Parsing results and creating CSV file"
+python $HERE/parse-elastic.py logs-$SLURM_JOB_ID/* > elastic-$SLURM_JOB_ID.csv
+
