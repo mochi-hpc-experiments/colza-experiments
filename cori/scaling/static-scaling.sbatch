@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=ColzaSSG
 #SBATCH --qos=regular
-#SBATCH --time=04:00:00
+#SBATCH --time=01:00:00
 #SBATCH --nodes=128
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=32
@@ -16,6 +16,7 @@ HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
 
 SSG_FILENAME=colza-$SLURM_JOB_ID.ssg
+DRC_CREDENTIAL_ID=-1
 
 function print_log() {
     MSG=$1
@@ -34,6 +35,7 @@ function run_instance () {
               -s $SSG_FILENAME \
               -p 500 \
               -c $HERE/pipeline.json \
+              -d $DRC_CREDENTIAL_ID \
               -t 1 > $OUTFILE 2>&1 &
     SRUN_PID=$!
     print_log "Waiting $WAITTIME seconds"
@@ -42,6 +44,10 @@ function run_instance () {
     kill $SRUN_PID
     print_log "Waiting for staging area to shut down"
     wait $SRUN_PID
+    if [[ "$DRC_CREDENTIAL_ID" -eq "-1" ]]; then
+        DRC_CREDENTIAL_ID=$(python find-drc_credential.py $OUTFILE)
+        print_log "DRC credential changed to $DRC_CREDENTIAL_ID"
+    fi
     print_log "Done!"
     rm $SSG_FILENAME
 }
