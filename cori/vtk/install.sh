@@ -88,12 +88,12 @@ function install_paraview {
              -DCMAKE_C_COMPILER=cc \
              -DVTK_PYTHON_OPTIONAL_LINK=OFF \
              -DCMAKE_BUILD_TYPE=Release \
-             -DCMAKE_INSTALL_PREFIX=$HERE/paraview-install
+             -DCMAKE_INSTALL_PREFIX=$PARAVIEW_PREFIX_PATH
     make -j 4
     make install
     popd # from build
     # ParaView doesn't install the IceT headers so we have to do it
-    cp ThirdParty/IceT/vtkicet/src/include/*.h $PARAVIEW_PREFIX_PATH/include
+    cp ThirdParty/IceT/vtkicet/src/include/*.h $PARAVIEW_PREFIX_PATH/include/paraview-5.8
     popd # from $PARAVIEW_SOURCE_PATH
     echo "====> Done building and installing ParaView"
 }
