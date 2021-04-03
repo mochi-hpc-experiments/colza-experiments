@@ -5,7 +5,7 @@ static-scaling-<jobid>.out, and a list of files named static.<N>.<jobid>.out
 produced by a deployment of the staging area with N servers.
 
 This script looks for the following types of lines in the script's output:
-[2021-03-10 14:41:03.452571842] Starting staging area on 1 processes
+[2021-03-10 14:41:03.452571842] Starting staging area on X processes
 (printed right before a staging area is deployed)
 [2021-03-10 14:41:33.464327656] Killing staging area
 (printed right before a request to kill the staging area is done)
@@ -14,10 +14,10 @@ The script looks for the following types of lines in the staging area logs:
 [2021-03-10 14:41:43.297] [info] Server running at address ofi+gni://...
 (printed when the process is running and ready to accept requests from clients)
 
-The time to rescale from N processes to N+1 is measure as the time
+The time to rescale from N processes to M is measure as the time
 between the "Killing staging area" message for a staging area of N processes,
-and the last "Server running" message for a staging area of N+1 processes.
-except for the case of 1 process, where the time is measure between the
+and the last "Server running" message for a staging area of M processes.
+except for initial deployment, where the time is measured between the
 "Starting staging area" message and the "Server running" message.
 
 The script outputs CSV data on its standard output. Each line contains two
@@ -34,6 +34,7 @@ import datetime
 date_re = re.compile('^\[(\d\d\d\d)-(\d\d)-(\d\d)\s(\d\d):(\d\d):(\d\d.\d+)\]')
 
 def parse_time(line):
+    """Get the timestamp from a line."""
     m = date_re.match(line)
     if m is None:
         return None
@@ -49,47 +50,53 @@ def parse_time(line):
         int((second - int(second))*1000000))
     return date
 
-def find_ready_time(filename):
-    result = None
+
+def parse_file(filename):
+    """Parse a single file, generate a list of tuples
+    either in the form (t, 'starting', n) or (t, 'ready', 0),
+    or (t, 'killed', 0)."""
+    events = []
     for line in open(filename):
-        if 'Server running at address' not in line:
-            continue
-        t = parse_time(line)
-        if result is None:
-            result = t
-        elif t > result:
-            result = t
-    return result
+        if 'Starting staging area on' in line:
+            t = parse_time(line)
+            n = int(line.split()[6])
+            events.append((t, 'starting', n))
+        elif 'Killing staging area' in line:
+            t = parse_time(line)
+            events.append((t, 'killed', 0))
+        elif 'Server running at address' in line:
+            t = parse_time(line)
+            events.append((t, 'ready', 0))
+    return events
 
 
-if len(sys.argv) != 2:
-    print('Usage: python parse-static.py <job-id>')
-    sys.exit(-1)
+def parse_all_files(filenames):
+    """Parse a list of files, sort and merge their events."""
+    events = []
+    for filename in sys.argv[1:]:
+        events.extend(parse_file(filename))
+    events.sort()
+    return events
 
-job_id = int(sys.argv[1])
-job_out_filename = 'static-scaling-%d.out' % job_id
 
-start_times = []
-kill_times = []
-for line in open(job_out_filename):
-    if 'Starting staging area' in line:
-        t = parse_time(line)
-        start_times.append(t)
-    elif 'Killing staging area' in line:
-        t = parse_time(line)
-        kill_times.append(t)
+def purge_events(events):
+    """Remove unnecessary events (and add one at the beginning)."""
+    events.insert(0, (events[0][0], 'killed', 0))
+    events_copy = []
+    n = 0
+    for i in range(0, len(events)):
+        if events[i][1] == 'killed':
+            events_copy.append(events[i])
+        elif events[i][1] == 'starting':
+            n = events[i][2]
+        elif events[i][1] == 'ready':
+            if events_copy[-1][1] == 'ready':
+                events_copy[-1] = (events[i][0], 'ready', n)
+            else:
+                events_copy.append((events[i][0], 'ready', n))
+    return events_copy
 
-ready_times = []
-for i in range(1, len(start_times)+1):
-    logfile = 'static.%d.%d.out' % (i, job_id)
-    t = find_ready_time(logfile)
-    ready_times.append(t)
-
-for i in range(1, len(start_times)+1):
-    if ready_times[i-1] is None:
-        continue
-    if i == 1:
-        t = (ready_times[0] - start_times[0]).total_seconds()
-    else:
-        t = (ready_times[i-1] - kill_times[i-2]).total_seconds()
-    print('%d,%f' % (i, t))
+events =  purge_events(parse_all_files(sys.argv[1:]))
+for i, j in zip(events[0::2], events[1::2]):
+    t = (j[0]-i[0]).total_seconds()
+    print(str(j[2])+','+str(t))
