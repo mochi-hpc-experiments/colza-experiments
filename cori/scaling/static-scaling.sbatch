@@ -45,7 +45,7 @@ function run_instance () {
     print_log "Waiting for staging area to shut down"
     wait $SRUN_PID
     if [[ "$DRC_CREDENTIAL_ID" -eq "-1" ]]; then
-        DRC_CREDENTIAL_ID=$(python find-drc-credential.py $OUTFILE)
+        DRC_CREDENTIAL_ID=$(python $HERE/find-drc-credential.py $OUTFILE)
         print_log "DRC credential changed to $DRC_CREDENTIAL_ID"
     fi
     print_log "Done!"
