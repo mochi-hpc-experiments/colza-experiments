@@ -48,5 +48,6 @@ This folder contains the following files.
 - `overhead.sbatch`: job script to submit to the SLURM job scheduler;
 - `parse-logs.py`: python script that processes the log files and
   produces the final CSV file (called automatically at the end of
-  the job).
-- pipeline.json
+  the job);
+- `pipeline.json`: minimal JSON configuration for Colza, requesting
+  the instantiation of a "dummy" pipeline.
