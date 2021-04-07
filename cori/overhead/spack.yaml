@@ -1,7 +1,7 @@
 spack:
   specs:
   - mochi-margo@0.9.3 %gcc@9.3.0
-  - mochi-colza@0.1 +examples ~bedrock +drc %gcc@9.3.0
+  - mochi-colza@0.1 ~bedrock +examples +drc %gcc@9.3.0
   concretization: together
   compilers:
   - compiler:

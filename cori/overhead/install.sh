@@ -76,7 +76,7 @@ function install_mochi {
         echo "====> Using current commit of mochi-spack-packages"
     else
         echo "====> Using mochi-spack-packages at commit $COLZA_EXP_MOCHI_COMMIT"
-        pushd $COLZA_EXP_SPACK_LOCATION
+        pushd $COLZA_EXP_MOCHI_LOCATION
         git checkout $COLZA_EXP_MOCHI_COMMIT
         popd
     fi
