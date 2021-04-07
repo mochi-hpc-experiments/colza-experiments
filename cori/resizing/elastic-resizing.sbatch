@@ -6,7 +6,7 @@
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=32
 #SBATCH --constraint=haswell
-#SBATCH --output="elastic-scaling-%j.out"
+#SBATCH --output="elastic-resizing-%j.out"
 
 export MPICH_GNI_NDREG_ENTRIES=1024
 
@@ -76,7 +76,7 @@ print_log "Experiment complete"
 rm $SSG_FILENAME
 
 print_log "Moving log files"
-mv elastic-scaling-$SLURM_JOB_ID.out $LOG_DIR
+mv elastic-resizing-$SLURM_JOB_ID.out $LOG_DIR
 
 print_log "Parsing results and creating CSV file"
 python $HERE/parse-elastic.py $LOG_DIR/* > elastic-$SLURM_JOB_ID.csv

@@ -1,4 +1,4 @@
-# Static vs. Elastic scaling experiment
+# Static vs. Elastic resizing experiment
 
 This folder contains two experiments aimed to run on the Cori supercomputer.
 Each experiment will try to resize a staging area from 1 node all the way up
@@ -30,16 +30,16 @@ the experiments with exactly the same software as originally used.
 The _static_ and _elastic_ experiments can be run as follows.
 
 ```
-$ sbatch static-scaling.sbatch
-$ sbatch elastic-scaling.sbatch
+$ sbatch static-resizing.sbatch
+$ sbatch elastic-resizing.sbatch
 ```
 
 While this was not evaluated our paper, you can also add processes
 X by X (instead of 1 by 1) by calling these scripts as follows.
 
 ```
-$ sbatch static-scaling.sbatch X
-$ sbatch elastic-scaling.sbatch X
+$ sbatch static-resizing.sbatch X
+$ sbatch elastic-resizing.sbatch X
 ```
 
 Both scripts will create a directory called `logs-<jobid>` to
@@ -54,7 +54,30 @@ reach that size from the previous deployment.
 Note: occasionally the last command of the `elastic` script may
 fail to properly shut down the staging area, leaving the script
 hanging before the Python script is called. If this happens, you may
-kill the job, manually move its output file (`elastic-scaling-<jobid>.out`)
+kill the job, manually move its output file (`elastic-resizing-<jobid>.out`)
 to the `logs-<jobid>` directory (where other output files are stored),
 then manually run call `python parse-elastic.py logs-<jobid>/*.out`
 to produce the CSV data on your standard output.
+
+## Files
+
+This folder contains the following files.
+- `settings.sh`: contains environment variables to control
+  where and how the software is installed;
+- `spack.yaml`: contains a description of the Spack environment
+  to setup and install;
+- `install.sh`: install the software required to run the experiment;
+- `elastic-resizing.sbatch`: job script to submit to the SLURM job scheduler
+  to run the elastic experiment;
+- `static-resizing.sbatch`: job script to submit to the SLURM job scheduler
+  to run the static experiment;
+- `parse-elastic.py`: python script that processes the log files and
+  produces the final CSV file (called automatically at the end of
+  the job);
+- `parse-static.py`: python script that processes the log files and
+  produces the final CSV file (called automatically at the end of
+  the job);
+- `find-drc-credential.py`: python script used as part of the static
+  experiment to find the DRC credential information from the first
+  staging area to reuse it in subsequent deployments;
+- `pipeline.json`: dummy configuration file for the staging area.

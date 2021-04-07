@@ -6,7 +6,7 @@
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=32
 #SBATCH --constraint=haswell
-#SBATCH --output="static-scaling-%j.out"
+#SBATCH --output="static-resizing-%j.out"
 
 export MPICH_GNI_NDREG_ENTRIES=1024
 
@@ -68,7 +68,7 @@ done
 print_log "Experiment done"
 
 print_log "Parsing results and creating CSV file"
-python $HERE/parse-static.py static-scaling-$SLURM_JOB_ID.out $LOG_DIR/*.out > static-$SLURM_JOB_ID.csv
+python $HERE/parse-static.py static-resizing-$SLURM_JOB_ID.out $LOG_DIR/*.out > static-$SLURM_JOB_ID.csv
 
 print_log "Moving log files"
-mv static-scaling-$SLURM_JOB_ID.out $LOG_DIR
+mv static-resizing-$SLURM_JOB_ID.out $LOG_DIR
