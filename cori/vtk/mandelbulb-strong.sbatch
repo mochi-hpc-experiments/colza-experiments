@@ -11,7 +11,7 @@ HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
 
 METHOD=${1:-mona} # can be changed to mpi
-CONFIG=$METHOD-pipeline.json
+CONFIG=mb-$METHOD-pipeline.json
 CLIENT_NODES=16
 CLIENT_PROCS=512
 SERVER_NODES=$(( $SLURM_JOB_NUM_NODES-$CLIENT_NODES ))
@@ -21,14 +21,16 @@ STEP=6
 PROTOCOL=gni
 SSG_FILENAME=colza-$SLURM_JOB_ID.ssg
 SSG_SWIM_PERIOD=5000
+LOG_DIR=logs-$SLURM_JOB_ID
+mkdir $LOG_DIR
 
 BLOCKLENW=${2:-64}
 BLOCKLENH=${3:-64}
 BLOCKLEND=${4:-128}
 BLOCKNUM=2048
 
-SERVERS_OUT_LOG=mb-strong.servers.$SLURM_JOB_ID.out
-CLIENTS_OUT_LOG=mb-strong.clients.$SLURM_JOB_ID.out
+SERVERS_OUT_LOG=$LOG_DIR/mb-strong.servers.$SLURM_JOB_ID.out
+CLIENTS_OUT_LOG=$LOG_DIR/mb-strong.clients.$SLURM_JOB_ID.out
 
 export ABT_THREAD_STACKSIZE=2097152
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/mini-apps/lib
@@ -54,7 +56,7 @@ srun -C haswell -N $SERVER_NODES -n $SERVER_PROCS -c 8 -l --cpu_bind=cores \
     -s $SSG_FILENAME \
     -c $CONFIG -t 1 \
     -p $SSG_SWIM_PERIOD &> $SERVERS_OUT_LOG &
-
+COLZA_PID=$!
 print_log "Waiting for all the servers processes to start"
 
 servers_ready=0
@@ -78,5 +80,7 @@ srun -C haswell -N $CLIENT_NODES -n $CLIENT_PROCS -c 2 -l --cpu_bind=cores \
     -d $BLOCKLEND \
     -e $BLOCKLENH &> $CLIENTS_OUT_LOG
 
+print_log "Client done"
+kill $COLZA_PID
 print_log "All done!"
 
