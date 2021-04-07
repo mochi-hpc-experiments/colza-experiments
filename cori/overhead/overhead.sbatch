@@ -17,6 +17,8 @@ HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
 
 SSG_FILENAME=colza-$SLURM_JOB_ID.ssg
+LOG_DIR=logs-$SLURM_JOB_ID
+mkdir $LOG_DIR
 
 function print_log() {
     MSG=$1
@@ -28,7 +30,7 @@ function add_instance () {
     INSTANCE_NUMBER=$1
     CREATE_GROUP=$3
     WAITTIME=$2
-    OUTFILE=overhead.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
+    OUTFILE=$LOG_DIR/overhead.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
     print_log "Starting process $INSTANCE_NUMBER of staging area"
     NP=$INCR
     if [ "$CREATE_GROUP" -eq "1" ]; then
@@ -68,7 +70,7 @@ srun -n 1 colza-dist-client \
             -i 10000 \
             --no-execute \
             --no-stage \
-            -w 1 > overhead.client.$SLURM_JOB_ID.out 2>&1 &
+            -w 1 > $LOG_DIR/overhead.client.$SLURM_JOB_ID.out 2>&1 &
 CLIENT_PID=$!
 
 sleep 15
@@ -92,13 +94,12 @@ print_log "Experiment complete"
 
 rm $SSG_FILENAME
 
-print_log "Moving log files"
-mkdir logs-$SLURM_JOB_ID
-mv overhead*$SLURM_JOB_ID.out logs-$SLURM_JOB_ID
-
 print_log "Parsing results and creating CSV file"
 python $HERE/parse-logs.py \
-    logs-$SLURM_JOB_ID/overhead.client.$SLURM_JOB_ID.out \
+    $LOG_DIR/overhead.client.$SLURM_JOB_ID.out \
     > overhead-$SLURM_JOB_ID.csv
+
+print_log "Moving log files"
+mv overhead-job-$SLURM_JOB_ID.out $LOG_DIR
 
 print_log "All done!"
