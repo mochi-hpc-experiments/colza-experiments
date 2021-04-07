@@ -66,7 +66,7 @@ function install_paraview {
     fi
     pushd $PARAVIEW_SOURCE_PATH
     echo "====> Checking out correct commit"
-    git checkout ecb0a075f459c9db78bdd57bf83d715a99f0fe55
+    git checkout $COLZA_EXP_PARAVIEW_COMMIT
     git submodule update --init --recursive
     echo "====> Building ParaView"
     # Creating build directory
@@ -112,9 +112,9 @@ function install_spack {
     if [ -z "$COLZA_EXP_SPACK_VERSION" ]; then
         echo "====> Using develop version of Spack"
     else
-        echo "====> Using spack version $COLZA_EXP_SPACK_VERSION"
+        echo "====> Using spack version/commit/tag $COLZA_EXP_SPACK_VERSION"
         pushd $COLZA_EXP_SPACK_LOCATION
-        git checkout tags/$COLZA_EXP_SPACK_VERSION
+        git checkout $COLZA_EXP_SPACK_VERSION
         popd
     fi
 }
@@ -132,6 +132,14 @@ function install_mochi {
     fi
     echo "====> Cloning Mochi namespace"
     git clone https://github.com/mochi-hpc/mochi-spack-packages.git $COLZA_EXP_MOCHI_LOCATION
+    if [ -z "$COLZA_EXP_MOCHI_COMMIT" ]; then
+        echo "====> Using latest commit of mochi-spack-packages"
+    else
+        echo "====> Using mochi-spack-packages at commit $COLZA_EXP_MOCHI_COMMIT"
+        pushd $COLZA_EXP_MOCHI_LOCATION
+        git checkout $COLZA_EXP_MOCHI_COMMIT
+        popd
+    fi
 }
 
 function install_colza {
@@ -163,7 +171,7 @@ function install_mini_apps {
     echo "====> Building mini apps"
     spack env activate $COLZA_EXP_SPACK_ENV
     pushd $MINIAPP_SOURCE_PATH
-    git checkout debug
+    git checkout $COLZA_EXP_MINIAPPS_COMMIT
     if [ ! -d build ]; then
         mkdir build
     else
