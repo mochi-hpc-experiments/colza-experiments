@@ -16,6 +16,8 @@ HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
 
 SSG_FILENAME=colza-$SLURM_JOB_ID.ssg
+LOG_DIR=logs-$SLURM_JOB_ID
+mkdir $LOG_DIR
 DRC_CREDENTIAL_ID=-1
 
 function print_log() {
@@ -27,7 +29,7 @@ function print_log() {
 function run_instance () {
     NPROCS=$1
     WAITTIME=$2
-    OUTFILE=static.$NPROCS.$SLURM_JOB_ID.out
+    OUTFILE=$LOG_DIR/static.$NPROCS.$SLURM_JOB_ID.out
     print_log "Starting staging area on $NPROCS processes"
     srun -n $NPROCS colza-dist-server \
               -a ofi+gni \
@@ -53,7 +55,7 @@ function run_instance () {
 }
 
 print_log "Loading spack"
-. $COLZA_EXP_SPACK_LOCATION/spack/share/spack/setup-env.sh
+. $COLZA_EXP_SPACK_LOCATION/share/spack/setup-env.sh
 
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
@@ -66,8 +68,7 @@ done
 print_log "Experiment done"
 
 print_log "Parsing results and creating CSV file"
-python $HERE/parse-static.py static-scaling-$SLURM_JOB_ID.out logs-$SLURM_JOB_ID/*.out > static-$SLURM_JOB_ID.csv
+python $HERE/parse-static.py static-scaling-$SLURM_JOB_ID.out $LOG_DIR/*.out > static-$SLURM_JOB_ID.csv
 
 print_log "Moving log files"
-mkdir logs-$SLURM_JOB_ID
-mv static.*.out logs-$SLURM_JOB_ID
+mv static-scaling-$SLURM_JOB_ID.out $LOG_DIR

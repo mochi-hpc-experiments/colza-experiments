@@ -17,6 +17,8 @@ HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
 
 SSG_FILENAME=colza-$SLURM_JOB_ID.ssg
+LOG_DIR=logs-$SLURM_JOB_ID
+mkdir $LOG_DIR
 
 function print_log() {
     MSG=$1
@@ -28,7 +30,7 @@ function add_instance () {
     INSTANCE_NUMBER=$1
     CREATE_GROUP=$3
     WAITTIME=$2
-    OUTFILE=elastic.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
+    OUTFILE=$JOB_DIR/elastic.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
     print_log "Starting process $INSTANCE_NUMBER of staging area"
     NP=$INCR
     if [ "$CREATE_GROUP" -eq "1" ]; then
@@ -44,14 +46,13 @@ function add_instance () {
               -s $SSG_FILENAME \
               -c $HERE/pipeline.json \
               -t 1 > $OUTFILE 2>&1 &
-    SRUN_PID=$!
     print_log "Waiting $WAITTIME seconds"
     sleep $WAITTIME
     print_log "Done!"
 }
 
 print_log "Loading spack"
-. $COLZA_EXP_SPACK_LOCATION/spack/share/spack/setup-env.sh
+. $COLZA_EXP_SPACK_LOCATION/share/spack/setup-env.sh
 
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
@@ -75,9 +76,8 @@ print_log "Experiment complete"
 rm $SSG_FILENAME
 
 print_log "Moving log files"
-mkdir logs-$SLURM_JOB_ID
-mv elastic*$SLURM_JOB_ID.out logs-$SLURM_JOB_ID
+mv elastic-scaling-$SLURM_JOB_ID.out $LOG_DIR
 
 print_log "Parsing results and creating CSV file"
-python $HERE/parse-elastic.py logs-$SLURM_JOB_ID/* > elastic-$SLURM_JOB_ID.csv
+python $HERE/parse-elastic.py $LOG_DIR/* > elastic-$SLURM_JOB_ID.csv
 
