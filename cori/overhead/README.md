@@ -22,6 +22,11 @@ This command will install Spack, the Mochi packages, then
 create an environment in Spack and install Colza and its
 dependencies in it.
 
+This script will look at `settings.sh` to use specific
+commits of Spack and the Mochi packages, so as to reproduce
+the experiments with exactly the same software as originally
+used.
+
 Running
 =======
 
@@ -34,7 +39,7 @@ sbatch overhead.sbatch
 Once the job has completed, you will find a file named
 `overhead-<jobid>.csv` containing the results. The complete
 set of log files from the job is located in a folder
-named `logs-<jobid>`.
+named `logs-<jobid>`..
 
 Files
 =====
