@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=ColzaSSG
 #SBATCH --qos=regular
-#SBATCH --time=01:00:00
+#SBATCH --time=04:00:00
 #SBATCH --nodes=128
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=32

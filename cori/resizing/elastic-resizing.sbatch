@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=ColzaSSG
 #SBATCH --qos=regular
-#SBATCH --time=00:30:00
+#SBATCH --time=02:00:00
 #SBATCH --nodes=128
 #SBATCH --tasks-per-node=1
 #SBATCH --cpus-per-task=32
@@ -61,7 +61,7 @@ CREATE_GROUP=1 # first call must create the group
 
 for (( P=$START; P <= 127;  P=$P+$INCR ))
 do
-    add_instance $P 30 $CREATE_GROUP
+    add_instance $P 60 $CREATE_GROUP
     CREATE_GROUP=0
 done
 
