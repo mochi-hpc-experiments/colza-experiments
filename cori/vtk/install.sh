@@ -166,7 +166,7 @@ function install_mini_apps {
     fi
     if [ ! -d $MINIAPP_SOURCE_PATH ]; then
         echo "====> Cloning mini apps"
-        git clone https://github.com/wangzhezhe/mona-vtk.git $MINIAPP_SOURCE_PATH
+        git clone https://github.com/mochi-hpc-experiments/mona-vtk.git $MINIAPP_SOURCE_PATH
     fi
     echo "====> Building mini apps"
     spack env activate $COLZA_EXP_SPACK_ENV
