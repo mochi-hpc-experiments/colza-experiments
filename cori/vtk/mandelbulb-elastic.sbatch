@@ -20,6 +20,8 @@ fi
 HERE=$SLURM_SUBMIT_DIR
 source $HERE/settings.sh
 
+LOG_DIR=logs-$SLURM_JOB_ID
+mkdir $LOG_DIR
 
 export SCRIPTPATH="src/mini-apps/example/MandelbulbColza/pipeline/mbrender_64_iso.py"
 export NUM_BLOCKS=256
@@ -46,7 +48,7 @@ function add_instance () {
     INSTANCE_NUMBER=$1
     CREATE_GROUP=$3
     WAITTIME=$2
-    OUTFILE=mandelbulb.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
+    OUTFILE=$LOG_DIR/mandelbulb.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
     print_log "Starting process $INSTANCE_NUMBER of staging area"
     NP=$INCR
     if [ "$CREATE_GROUP" -eq "1" ]; then
@@ -84,7 +86,7 @@ srun -n 256 -N 16 --tasks-per-node=16 -c 2 ./sw/mini-apps/bin/example/Mandelbulb
             -e 128 -d 128 -w 64 \
             -p vtk \
             -b $NUM_BLOCKS \
-            -t 1200 2>&1 > mandelbulb.client.$SLURM_JOB_ID.out &
+            -t 1200 2>&1 > $LOG_DIR/mandelbulb.client.$SLURM_JOB_ID.out &
 CLIENT_PID=$!
 
 print_log "Waiting 200 seconds"

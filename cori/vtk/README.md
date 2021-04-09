@@ -16,7 +16,25 @@ Contrary to the `install.sh` scripts from other folders,
 this script will also install ParaView and the mini-apps.
 The former will take several hours to build, so be patient!
 
+Note: the script installs dependencies in this order:
+- ParaView (clone in `src`, build, install in `sw`)
+- Spack (clone in `sw`)
+- Mochi (clone in `sw`)
+- Colza (create Spack environment, install Colza in it)
+- Mini-apps (clone in `src`, build, install in `sw`)
+If you need to call the `install.sh` script again but some
+of the steps have already been done, use `--skip-paraview`,
+`--skip-spack`, `--skip-mochi`, `--skip-colza`, or `--skip-miniapps`.
+For example if you already successfully installed ParaView and Spack,
+use `./install.sh --skip-paraview --skip-spack`. This can be useful
+to avoid spending long hours building ParaView, in particular.
+Note that the script may ask you to delete some directories to
+avoid re-using partial builds.
+
 ## Communication evaluation
+
+These experiments compare MPI and MoNA when running visualization
+pipelines for the Mandelbulb and Gray-Scott applications.
 
 The `mandelbulb-strong.sbatch` and `mandelbulb-weak.sbatch`,
 and the `gray-scott.sbatch`, aim to evaluate the execution
@@ -53,7 +71,8 @@ the timing of `execute` calls.
 The job will also generate PNG images named `RenderView1_*.png` in the
 current working directory.
 
-For every data size, the typical scipts we run for evaluation are (both for mona and mpi methods):
+For every data size, the typical submissions we ran in evaluation
+are (both for mona and mpi methods):
 
 ```
 sbatch --nodes 17 mandelbulb-strong.sbatch mona 64 64 128
@@ -64,7 +83,9 @@ sbatch --nodes 32 mandelbulb-strong.sbatch mona 64 64 128
 sbatch --nodes 48 mandelbulb-strong.sbatch mona 64 64 128
 ```
 
-If the dir name for log is `logs-41455589` , we can run `python3 parse-mb-exec-time.py logs-41455589` to extract key information such as average execution time by this way:
+With the logs stored in `logs-<jobid>`, you will then need to run
+`python3 parse-mb-exec-time.py logs-<jobid>` to extract key information
+such as average execution time. And example of output:
 
 ```
 client_file:  logs-41455589/mb-strong.clients.41455589.out
@@ -80,7 +101,9 @@ avg execution time without first step:
 
 ## mandelbulb-weak.sbatch
 
-For the weak scale experiment, we need to make sure there is fixed proportion of data size to the staging services.
+This experiment is very similar to the previous one, but uses
+an amount of data (and number of clients) that is proportional
+to the number of staging servers.
 
 The script can be submitted by this way:
 
@@ -88,17 +111,22 @@ The script can be submitted by this way:
 sbatch --nodes <N> mandelbulb-weak.sbatch <method> <client nodes> <width> <heigh> <depth>
 ```
 
-For example, if we submit job:
+For example, if we submit:
 
 ```
 sbatch --nodes 3 mandelbulb-weak.sbatch mona 2 64 64 128
 ```
 
-We assign 3 nodes, 1 node is used as staging processes (4 staging processes per node), 2 nodes of them are used for clients (32 processes per node).
+We allocate 3 nodes. 1 node is used by staging area processes
+(4 staging processes per node), 2 nodes are used by the
+Mandelbulb application (32 processes per node).
 
-We use `64*64*128`,`64*128*128`, and `128*128*128` as the data block size for both mona and mpi methods. The job will also generates PNG images named `RenderView1_*.png` in the current working directory.
+We use `64x64x128`,`64x128x128`, and `128x128x128` as
+block sizes for both mona and mpi methods. The job will also generates
+PNG images named `RenderView1_*.png` in the current working directory.
 
-For each block size, the typical scripts for evaluation are (both for mona and mpi methods):
+For each block size, the typical submissions for our evaluation are
+(both for mona and mpi methods):
 
 ```
 sbatch --nodes 3 mandelbulb-weak.sbatch mona 2 64 64 128
@@ -108,39 +136,26 @@ sbatch --nodes 18 mandelbulb-weak.sbatch mona 16 64 64 128
 sbatch --nodes 36 mandelbulb-weak.sbatch mona 32 64 64 128
 ```
 
-The similar PNG images named `RenderView1_*.png` will be generated in the
-current working directory.
-
-If the dir name for log is `logs-41453995` , we can run
+If the directory containing log files is `logs-41453995`,
+you may then run the same Python script as before to extract
+relevant execution timings:
 
 ```
 parse-mb-exec-time.py logs-41453995
 ```
 
-this script can extract the key log messages and cacualte the average execution time as follows:
-
-```
-client_file:  logs-41453995/mb-weak.clients.41453995.out
- 0: rank 0 execution time 10.863
- 0: rank 0 execution time 4.74145
- 0: rank 0 execution time 2.47949
- 0: rank 0 execution time 2.3503
- 0: rank 0 execution time 2.36547
- 0: rank 0 execution time 2.32615
-avg execution time without first step:
-2.852572
-```
-
-
 ### grayscott-strong.sbatch
 
-We can submit the script as follows:
+This experiment uses the Gray-Scott application.
+It can be submitted as follows:
 
 ```
 sbatch --nodes <N> grayscott-strong.sbatch <method> <data len>
 ```
 
-The method parameter can be the `mona` or `mpi`, the `data length` represents the size of data domain. Since the gray-scott simulation uses the cubic domian, we use one parameter here.
+The method parameter can be the `mona` or `mpi`;
+the `data len` represents the size of data domain.
+Since the gray-scott simulation uses the cubic domian, we use one parameter here.
 
 For exmaple, if we submit the job by this way:
 
@@ -148,13 +163,20 @@ For exmaple, if we submit the job by this way:
 sbatch --nodes 17 grayscott-strong.sbatch mona 408
 ```
 
-We will assign 17 nodes, and 16 of them are used for clients (512 client processes in total), 1 node is used for staging services (4 staging services in total).
+We will assign 17 nodes. 16 of them are used for clients
+(512 client processes in total), 1 node is used for
+staging services (4 staging services in total).
 
-The grid size is `408*408*408`, if there is one double value in the grid, there is around 512MB data for each iteration. Other configurations about the simulation is included in the `gs-clientconfig-template.json`, we can updated these parameters as needed, a new json file will be created based on this template with proper data size and ssg file.
+The grid size is `408x408x408`. Each grid point contains a
+double value, leading to 512MB of total data size per iteration.
+Other configuration parameters of the simulation may be found in the
+`gs-clientconfig-template.json` file, and can be edited as desired.
+A new json file is created by `grayscott-strong.sbatch` based on
+this template upon submission.
 
 In the evaluation, we use grid length `408`, `512` and `646`.
 
-The typical nodes configurations are (both for `mona` and `mpi`)
+The typical submissions are (both for `mona` and `mpi`):
 
 ```
 sbatch --nodes 17 grayscott-strong.sbatch mona 408
@@ -165,12 +187,12 @@ sbatch --nodes 32 grayscott-strong.sbatch mona 408
 sbatch --nodes 48 grayscott-strong.sbatch mona 408
 ```
 
-Similarly, if the log dir is `logs-41462947`
-
-we can extract the execution time by :
+Similarly, if the log dir is `logs-41462947`,
+one can extract the execution time by using the `parse-mb-exec-time.py`
+script as follows.
 
 ```
-$ python3 parse-mb-exec-time.py logs-41462947 
+$ python3 parse-mb-exec-time.py logs-41462947
 client_file:  logs-41462947/gs-strong.clients.41462947.out
   0: rank 0 execution time 58.11
   0: rank 0 execution time 46.7291
@@ -180,5 +202,43 @@ client_file:  logs-41462947/gs-strong.clients.41462947.out
   0: rank 0 execution time 43.9309
 avg execution time without first step:
 45.24118
+```
+
+# Elasticity experiment
+
+## mandelbulb-elastic.sbatch
+
+This experiment corresponds to the last experiment of out paper.
+It allocates 24 nodes, and deploys the Mandelbulb application on
+16 nodes with 16 processes per node, a single block per client
+process, and a block size of `128x128x64`. It initially uses
+2 nodes to run Colza, using 1 process per node, then adds a
+new Colza node to the staging area, up to a total of 8 nodes,
+every 60 seconds.
+
+Again, this experiment creates a folder named `logs-<jobid>`
+for its output files. The most important of these log files
+is `logs-<jobid>/mandeldbulb.client.<jobid>.out`, which contains
+timing information. The user can extract this information
+in CSV format using the `parse-mb-elastic.py` Python script
+as follows.
 
 ```
+$ python parse-mb-elastic.py logs-12345678/mandelbulb.client.12345678.out
+Iteration,Num Colza procs,start(sec),stage(sec),execute(sec),cleanup(sec)
+1,2,0.000777721,0.813821,8.47251,0.000350714
+2,2,0.000440598,0.126383,6.44897,0.0003438
+3,2,0.000489712,0.121873,6.40546,0.000376463
+...
+```
+
+The CSV data, print on stdout, contains for each iteration of
+the Mandelbulb application the number of Colza processes used,
+and the timings of start, stage, execute, and cleanup calls.
+
+Note: a successful execution should result the Mandelbulb
+application completing around 30 iterations, and most importantly
+the last iterations are using 8 Colza servers. However, in some cases
+the Mandelbulb application may hang indefinitely in a `start` call
+and not complete its iterations. We are still in the processes of
+tracking down this issue.
