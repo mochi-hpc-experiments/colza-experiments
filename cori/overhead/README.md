@@ -4,8 +4,8 @@ Overhead of Two-Phase Commit
 This folder contains scripts to evaluate the overhead
 of the two-phase commit (2PC) algorithm in Colza. The
 experiment consists of deploying 1 server, then 1 client
-doing start/cleanup call in a loop, waiting 1 second
-between each call, then add a new server every second
+doing start/cleanup calls in a loop, waiting 1 second
+between each call, then add a new server every second,
 up to 63 servers.
 
 Installing
@@ -30,7 +30,7 @@ used.
 Running
 =======
 
-To run the experiment, simply run the following command.
+To run the experiment, simply execute the following command.
 
 ```
 sbatch overhead.sbatch
@@ -39,7 +39,7 @@ sbatch overhead.sbatch
 Once the job has completed, you will find a file named
 `overhead-<jobid>.csv` containing the results. The complete
 set of log files from the job is located in a folder
-named `logs-<jobid>`..
+named `logs-<jobid>`.
 
 Files
 =====
