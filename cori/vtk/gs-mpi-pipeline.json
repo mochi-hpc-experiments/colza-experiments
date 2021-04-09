@@ -1,0 +1,11 @@
+{
+    "pipelines" : {
+        "vtk" : {
+            "library" : "libgsmpibackend-pipeline.so",
+            "type" : "gsmpibackend",
+            "config" : {
+                "script" : "src/mini-apps/example/GrayScottColza/pipeline/gsrender_multiclip.py"
+            }
+        }
+    }
+}

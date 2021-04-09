@@ -96,7 +96,7 @@ sbatch --nodes 3 mandelbulb-weak.sbatch mona 2 64 64 128
 
 We assign 3 nodes, 1 node is used as staging processes (4 staging processes per node), 2 nodes of them are used for clients (32 processes per node).
 
-We use `64*64*128`,`64*128*128`, and `128*128*128` as the data block size for both mona and mpi methods. 
+We use `64*64*128`,`64*128*128`, and `128*128*128` as the data block size for both mona and mpi methods. The job will also generates PNG images named `RenderView1_*.png` in the current working directory.
 
 For each block size, the typical scripts for evaluation are (both for mona and mpi methods):
 
@@ -129,4 +129,56 @@ client_file:  logs-41453995/mb-weak.clients.41453995.out
  0: rank 0 execution time 2.32615
 avg execution time without first step:
 2.852572
+```
+
+
+### grayscott-strong.sbatch
+
+We can submit the script as follows:
+
+```
+sbatch --nodes <N> grayscott-strong.sbatch <method> <data len>
+```
+
+The method parameter can be the `mona` or `mpi`, the `data length` represents the size of data domain. Since the gray-scott simulation uses the cubic domian, we use one parameter here.
+
+For exmaple, if we submit the job by this way:
+
+```
+sbatch --nodes 17 grayscott-strong.sbatch mona 408
+```
+
+We will assign 17 nodes, and 16 of them are used for clients (512 client processes in total), 1 node is used for staging services (4 staging services in total).
+
+The grid size is `408*408*408`, if there is one double value in the grid, there is around 512MB data for each iteration. Other configurations about the simulation is included in the `gs-clientconfig-template.json`, we can updated these parameters as needed, a new json file will be created based on this template with proper data size and ssg file.
+
+In the evaluation, we use grid length `408`, `512` and `646`.
+
+The typical nodes configurations are (both for `mona` and `mpi`)
+
+```
+sbatch --nodes 17 grayscott-strong.sbatch mona 408
+sbatch --nodes 18 grayscott-strong.sbatch mona 408
+sbatch --nodes 20 grayscott-strong.sbatch mona 408
+sbatch --nodes 24 grayscott-strong.sbatch mona 408
+sbatch --nodes 32 grayscott-strong.sbatch mona 408
+sbatch --nodes 48 grayscott-strong.sbatch mona 408
+```
+
+Similarly, if the log dir is `logs-41462947`
+
+we can extract the execution time by :
+
+```
+$ python3 parse-mb-exec-time.py logs-41462947 
+client_file:  logs-41462947/gs-strong.clients.41462947.out
+  0: rank 0 execution time 58.11
+  0: rank 0 execution time 46.7291
+  0: rank 0 execution time 46.0243
+  0: rank 0 execution time 44.6614
+  0: rank 0 execution time 44.8602
+  0: rank 0 execution time 43.9309
+avg execution time without first step:
+45.24118
+
 ```

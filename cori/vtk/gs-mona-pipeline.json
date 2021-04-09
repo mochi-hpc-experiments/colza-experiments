@@ -1,0 +1,11 @@
+{
+    "pipelines" : {
+        "vtk" : {
+            "library" : "libgsmonabackend-pipeline.so",
+            "type" : "gsmonabackend",
+            "config" : {
+                "script" : "src/mini-apps/example/GrayScottColza/pipeline/gsrender_multiclip.py"
+            }
+        }
+    }
+}
