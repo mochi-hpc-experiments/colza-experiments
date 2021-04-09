@@ -1,9 +1,9 @@
 # Static vs. Elastic resizing experiment
 
 This folder contains two experiments aimed to run on the Cori supercomputer.
-Each experiment will try to resize a staging area from 1 node all the way up
+Each experiment will resize a staging area from 1 node all the way up
 to 127 nodes, one node at a time. The first experiment, _static_, will do
-so by deploying a staging area on N node, wait 30 seconds, then kill the
+so by deploying a staging area on N node, wait 60 seconds, then kill the
 staging area before redeploying it on N+1 nodes. The second experiment,
 _elastic_, will scale the staging area by adding processes one at a time
 without shutting down the processes that are already running.
@@ -34,7 +34,7 @@ $ sbatch static-resizing.sbatch
 $ sbatch elastic-resizing.sbatch
 ```
 
-While this was not evaluated our paper, you can also add processes
+While this was not evaluated in our paper, you can also add processes
 X by X (instead of 1 by 1) by calling these scripts as follows.
 
 ```
@@ -53,7 +53,7 @@ reach that size from the previous deployment.
 
 Note: occasionally the last command of the `elastic` script may
 fail to properly shut down the staging area, leaving the script
-hanging before the Python script is called. If this happens, you may
+hanging before the Python script is called. If this happens, you can
 kill the job, manually move its output file (`elastic-resizing-<jobid>.out`)
 to the `logs-<jobid>` directory (where other output files are stored),
 then manually run call `python parse-elastic.py logs-<jobid>/*.out`
