@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<simulation name="mandelbulb" language="c" xmlns="http://damaris.gforge.inria.fr/damaris/model">
+    <architecture>
+        <domains count="32" />
+        <dedicated cores="0" nodes="16" />
+        <buffer name="damaris-buffer" size="1073741824" />
+        <queue  name="damaris-queue" size="100" />
+    </architecture>
+    <data>
+        <parameter name="WIDTH"  type="int" value="64" />
+        <parameter name="HEIGHT" type="int" value="64" />
+        <parameter name="DEPTH"  type="int" value="64" />
+        <parameter name="BLOCKS" type="int" value="32"  />
+
+        <layout name="mandelbulb_layout" type="int" dimensions="DEPTH+1,HEIGHT,WIDTH" />
+        <layout name="position_layout" type="long" dimensions="3" />
+        <layout name="script_name_layout" type="char" dimensions="1024" />
+
+        <variable name="script" layout="script_name_layout" time-varying="false" />
+        <variable name="mandelbulb" layout="mandelbulb_layout" />
+        <variable name="position" layout="position_layout" time-varying="false" />
+    </data>
+    <actions>
+        <event name="render" action="mandelbulb_render" library="libmbrender_damaris.so" scope="core"/>
+    </actions>
+    <log FileName="logs-damaris/damaris" RotationSize="5" LogFormat="[%TimeStamp%]: %Message%" LogLevel="info" />
+</simulation>

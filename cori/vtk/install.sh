@@ -186,7 +186,9 @@ function install_mini_apps {
         -DENABLE_EXAMPLE=ON \
         -DParaView_DIR=$COLZA_EXP_PREFIX_PATH/paraview/lib64/cmake/paraview-5.8 \
         -DBUILD_SHARED_LIBS=ON \
-        -DCMAKE_INSTALL_PREFIX=$MINIAPP_PREFIX_PATH
+        -DCMAKE_INSTALL_PREFIX=$MINIAPP_PREFIX_PATH \
+        -DENABLE_DAMARIS=ON \
+        -DBOOST_ROOT=`spack location -i boost`
     make
     make install
     popd # build

@@ -1,7 +1,8 @@
 spack:
   specs:
   - mochi-colza +examples +drc @main %gcc@9.3.0
-  - paraview @develop-mochi %gcc@9.3.00
+  - paraview @develop-mochi %gcc@9.3.0
+  - damaris %gcc@9.3.0
   concretization: together
   compilers:
   - compiler:
