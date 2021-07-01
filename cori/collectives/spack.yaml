@@ -1,6 +1,6 @@
 spack:
   specs:
-  - mochi-mona@main +benchmark %gcc@9.3.0
+  - mochi-mona@0.1.1 +benchmark %gcc@9.3.0
   - mpi
   concretization: together
   compilers:
