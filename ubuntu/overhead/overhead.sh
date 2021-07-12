@@ -6,6 +6,7 @@ START=${2:-${INCR}}
 JOB_ID=`tr -dc A-Za-z0-9 </dev/urandom |  head -c 14`
 
 HERE=`dirname "$0"`
+HERE=`realpath $HERE`
 source $HERE/settings.sh
 
 SSG_FILENAME=colza.$JOB_ID.ssg
