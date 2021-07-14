@@ -7,6 +7,13 @@ HERE=`realpath $HERE`
 
 source $HERE/settings.sh
 
+HOSTFILE=$HERE/nodes.txt
+if [ ! -f "$HOSTFILE" ]; then
+    echo "$HOSTFILE does not exist."
+    echo "Please create this file with a list of nodes to use."
+    exit -1
+fi
+
 NUM_NODES=2
 NUM_PROCS=$NUM_NODES
 
@@ -35,13 +42,13 @@ for MSG_SIZE in ${MSG_SIZES[@]}; do
 
     print_log "Staring Send/Recv benchmark using MPI with message size = ${MSG_SIZE}"
 
-    mpirun -np $NUM_PROCS \
+    mpirun -np $NUM_PROCS -f $HOSTFILE \
         mona-send-recv-benchmark \
         -m mpi -s $MSG_SIZE -i $ITERATIONS >> $LOG.mpi
 
     print_log "Staring Send/Recv benchmark using MoNA with message size = ${MSG_SIZE}"
 
-    mpirun -np $NUM_PROCS \
+    mpirun -np $NUM_PROCS -f $HOSTFILE \
         mona-send-recv-benchmark \
         -m mona -t $TRANSPORT -s $MSG_SIZE -i $ITERATIONS >> $LOG.mona
 

@@ -1,15 +1,21 @@
 #!/bin/bash
-
 JOB_ID=`tr -dc A-Za-z0-9 </dev/urandom |  head -c 14`
 
 HERE=`dirname "$0"`
 HERE=`realpath $HERE`
 source $HERE/settings.sh
+HOSTFILE=$HERE/nodes.txt
 
-NUM_NODES=32
+if [ ! -f "$HOSTFILE" ]; then
+    echo "$HOSTFILE does not exist."
+    echo "Please create this file with a list of nodes to use."
+    exit -1
+fi
+
+NUM_NODES=`cat $HOSTFILE | wc -l`
 NUM_PROCS=$NUM_NODES
 
-ITERATIONS=100
+ITERATIONS=10000
 MSG_SIZES=(8 128 2048 32768 524288)
 TRANSPORT=ofi+tcp
 
@@ -30,17 +36,18 @@ print_log "Loading spack"
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
 
+which mpirun
+
 for MSG_SIZE in ${MSG_SIZES[@]}; do
 
     print_log "Staring Allreduce benchmark using MPI with message size = ${MSG_SIZE}"
 
-    mpirun -np $NUM_PROCS \
-        mona-allreduce-benchmark \
+    mpirun -f nodes.txt -n $NUM_PROCS mona-allreduce-benchmark \
         -m mpi -s $MSG_SIZE -i $ITERATIONS >> $LOG.mpi
 
     print_log "Staring Allreduce benchmark using MoNA with message size = ${MSG_SIZE}"
 
-    mpirun -np $NUM_PROCS \
+    mpirun -f nodes.txt -n $NUM_PROCS \
         mona-allreduce-benchmark \
         -m mona -t $TRANSPORT -s $MSG_SIZE -i $ITERATIONS >> $LOG.mona
 
