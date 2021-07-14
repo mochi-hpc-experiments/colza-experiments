@@ -8,6 +8,7 @@ echo $HERE
 source $HERE/settings.sh
 
 echo "====> Loading modules"
+module load python3/3.8-anaconda-2020.11
 module swap PrgEnv-intel PrgEnv-gnu
 module swap gcc/8.3.0 gcc/9.3.0
 module load cmake/3.18.2
