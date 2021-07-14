@@ -1,8 +1,5 @@
 #!/bin/bash
 
-INCR=${1:-1}
-START=${2:-${INCR}}
-
 JOB_ID=`tr -dc A-Za-z0-9 </dev/urandom |  head -c 14`
 
 HERE=`dirname "$0"`
@@ -17,7 +14,7 @@ if [ ! -f "$HOSTFILE" ]; then
     exit -1
 fi
 
-MAX_NUM_NODES=`cat $HOSTFILE | wc -l`
+NUM_NODES=`cat $HOSTFILE | wc -l`
 
 SSG_FILENAME=colza.$JOB_ID.ssg
 LOG_DIR=logs-$JOB_ID
@@ -29,20 +26,27 @@ function print_log() {
     echo "[$NOW] $MSG"
 }
 
+function get_node_list() {
+    START_LINE=$1
+    NUM_NODES=$2
+    hosts=$(readarray -t ARRAY < <(tail -n+$START_LINE $HOSTFILE | head -n$NUM_NODES); \
+           IFS=','; echo "${ARRAY[*]}")
+    echo $hosts
+}
+
 function add_instance () {
     INSTANCE_NUMBER=$1
     WAITTIME=$2
     CREATE_GROUP=$3
     OUTFILE=$LOG_DIR/overhead.$INSTANCE_NUMBER.$JOB_ID.out
-    print_log "Starting process $INSTANCE_NUMBER of staging area"
-    NP=$INCR
+    HOST=$(get_node_list $INSTANCE_NUMBER 1)
+    print_log "Starting process $INSTANCE_NUMBER of staging area on $HOST"
     if [ "$CREATE_GROUP" -eq "1" ]; then
         JOIN=""
-        NP=$START
     else
         JOIN="-j"
     fi
-    mpirun -np $NP colza-dist-server $JOIN \
+    mpirun -np 1 --hosts $HOST colza-dist-server $JOIN \
               -a ofi+tcp \
               -v trace \
               -p 500 \
@@ -65,7 +69,7 @@ print_log "Starting first server instance"
 add_instance 1 30 1
 
 print_log "Starting client"
-mpirun -np 1 colza-dist-client \
+colza-dist-client \
             -a ofi+tcp \
             -v trace \
             -s $SSG_FILENAME \
@@ -79,7 +83,7 @@ CLIENT_PID=$!
 sleep 15
 print_log "Starting more servers"
 
-for (( P=$START+$INCR; P <= $MAX_NUM_NODES-1;  P=$P+$INCR ))
+for (( P=2; P <= $NUM_NODES;  P=$P+1 ))
 do
     add_instance $P 15 0
 done
@@ -88,7 +92,7 @@ print_log "Killing client"
 kill $CLIENT_PID
 
 print_log "Shutting down the staging area"
-mpirun -np 1 colza-dist-admin \
+colza-dist-admin \
             -a ofi+tcp \
             -v trace \
             -s $SSG_FILENAME \
