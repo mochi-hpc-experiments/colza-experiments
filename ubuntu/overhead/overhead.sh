@@ -9,6 +9,16 @@ HERE=`dirname "$0"`
 HERE=`realpath $HERE`
 source $HERE/settings.sh
 
+HOSTFILE=$HERE/nodes.txt
+
+if [ ! -f "$HOSTFILE" ]; then
+    echo "$HOSTFILE does not exist."
+    echo "Please create this file with a list of nodes to use."
+    exit -1
+fi
+
+MAX_NUM_NODES=`cat $HOSTFILE | wc -l`
+
 SSG_FILENAME=colza.$JOB_ID.ssg
 LOG_DIR=logs-$JOB_ID
 mkdir $LOG_DIR
@@ -69,7 +79,7 @@ CLIENT_PID=$!
 sleep 15
 print_log "Starting more servers"
 
-for (( P=$START+$INCR; P <= 63;  P=$P+$INCR ))
+for (( P=$START+$INCR; P <= $MAX_NUM_NODES-1;  P=$P+$INCR ))
 do
     add_instance $P 15 0
 done
