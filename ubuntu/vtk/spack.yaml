@@ -24,9 +24,9 @@ spack:
   - lz4
   - lzma
   - zlib
-  - mochi-colza +examples ~bedrock @0.1
-  - paraview @develop-mochi
   - damaris
+#  - mochi-colza+examples~bedrock@0.1 # added by install.sh
+#  - paraview@develop-mochi # added by install.sh
   concretization: together
   packages:
     all:

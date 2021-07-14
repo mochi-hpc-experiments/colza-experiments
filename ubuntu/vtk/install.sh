@@ -45,11 +45,11 @@ done
 
 function install_paraview {
     echo "====> Installing dependencies needed by ParaView"
-    spack env create paraview-env paraview.yaml
-    spack env activate paraview-env
+    spack env create $COLZA_EXP_SPACK_ENV $HERE/spack.yaml
+    spack env activate $COLZA_EXP_SPACK_ENV
     spack install
     spack env deactivate
-    spack env activate paraview-env
+    spack env activate $COLZA_EXP_SPACK_ENV
     PARAVIEW_SOURCE_PATH=$COLZA_EXP_SOURCE_PATH/paraview
     PARAVIEW_PREFIX_PATH=$COLZA_EXP_PREFIX_PATH/paraview
     # Checking if source is already there
@@ -97,6 +97,7 @@ function install_paraview {
     cp ThirdParty/IceT/vtkicet/src/include/*.h $PARAVIEW_PREFIX_PATH/include/paraview-5.8
     popd # from $PARAVIEW_SOURCE_PATH
     echo "====> Done building and installing ParaView"
+    spack env deactivate
 }
 
 function install_spack {
@@ -144,14 +145,14 @@ function install_mochi {
 }
 
 function install_colza {
-    echo "====> Setting up Colza environment"
-    spack env create $COLZA_EXP_SPACK_ENV $HERE/spack.yaml
     echo "====> Activating environment"
     spack env activate $COLZA_EXP_SPACK_ENV
     echo "====> Adding Mochi namespace"
     spack repo add --scope env:$COLZA_EXP_SPACK_ENV $COLZA_EXP_MOCHI_LOCATION
     echo "====> Adding ParaView to spack environment"
     spack python -c "import spack.config; spack.config.set('packages:paraview', {'buildable': False, 'externals': [{'spec': 'paraview@develop-mochi', 'prefix': '$COLZA_EXP_PREFIX_PATH/paraview'}]})"
+    spack add mochi-colza +examples ~bedrock @0.1
+    spack add paraview@develop-mochi
     echo "====> Installing"
     spack install
     spack env deactivate
