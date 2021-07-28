@@ -153,7 +153,7 @@ function install_colza {
     echo "====> Adding ParaView to spack environment"
     spack python -c "import spack.config; spack.config.set('packages:paraview', {'buildable': False, 'externals': [{'spec': 'paraview@develop-mochi%gcc@9.3.0', 'prefix': '$COLZA_EXP_PREFIX_PATH/paraview'}]})"
     echo "====> Installing"
-    spack install
+    spack install -y
     spack env deactivate
 }
 

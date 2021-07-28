@@ -89,7 +89,12 @@ srun -n 256 -N 16 --tasks-per-node=16 -c 2 ./sw/mini-apps/bin/example/Mandelbulb
             -t 1200 2>&1 > $LOG_DIR/mandelbulb.client.$SLURM_JOB_ID.out &
 CLIENT_PID=$!
 
-print_log "Waiting 200 seconds"
+print_log "Waiting for client to have started"
+while ! [ -s $LOG_DIR/mandelbulb.client.$SLURM_JOB_ID.out ]; do
+    sleep 1
+done
+
+print_log "Waiting 60 sec before adding servers"
 sleep 60
 
 for (( P=$START+$INCR; P <= 8;  P=$P+$INCR ))
