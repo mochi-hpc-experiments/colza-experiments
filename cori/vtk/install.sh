@@ -139,6 +139,8 @@ function install_mochi {
         echo "====> Using mochi-spack-packages at commit $COLZA_EXP_MOCHI_COMMIT"
         pushd $COLZA_EXP_MOCHI_LOCATION
         git checkout $COLZA_EXP_MOCHI_COMMIT
+        echo "====> Applying patch to add mochi-colza@0.1.1"
+        git apply $HERE/add-colza-0.1.1.patch
         popd
     fi
 }

@@ -1,0 +1,12 @@
+diff --git a/packages/mochi-colza/package.py b/packages/mochi-colza/package.py
+index ed90fef..7893cae 100644
+--- a/packages/mochi-colza/package.py
++++ b/packages/mochi-colza/package.py
+@@ -11,6 +11,7 @@ class MochiColza(CMakePackage):
+ 
+     version('develop', branch='main')
+     version('main', branch='main')
++    version('0.1.1', sha256='fcbb09ebb3c1e566c608918feb8371cc6fbf2c992e73fa3b8eddd77abc26055f')
+     version('0.1', sha256='182c31ebb4d3f0b1b8ac3e8c04daf521d025f9dd981d4728df63f2a12882b2e1')
+ 
+     variant('bedrock', default=True,
