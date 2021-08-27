@@ -13,19 +13,14 @@ module swap PrgEnv-intel PrgEnv-gnu
 module swap gcc/8.3.0 gcc/9.3.0
 module load cmake/3.18.2
 
-SKIP_PARAVIEW=0  # skip installation of paraview
 SKIP_SPACK=0     # skip installation of spack
 SKIP_MOCHI=0     # skip installation of mochi repo
-SKIP_COLZA=0     # skip installation of colza
+SKIP_COLZA=0     # skip installation of colza environment
 SKIP_MINI_APPS=0 # skipp installation of mini-apps
 
 while [[ $# -gt 0 ]]
 do
     case $1 in
-    --skip-paraview)
-        SKIP_PARAVIEW=1
-        shift
-        ;;
     --skip-spack)
         SKIP_SPACK=1
         shift
@@ -48,56 +43,6 @@ do
         ;;
     esac
 done
-
-function install_paraview {
-    PARAVIEW_SOURCE_PATH=$COLZA_EXP_SOURCE_PATH/paraview
-    PARAVIEW_PREFIX_PATH=$COLZA_EXP_PREFIX_PATH/paraview
-    # Checking if source is already there
-    if [ -d "$PARAVIEW_PREFIX_PATH" ]
-    then
-        echo "====> ERROR: Paraview already installed in $PARAVIEW_PREFIX_PATH," \
-             "please remove this folder or use --skip-paraview"
-        exit -1
-    fi
-    # Cloning ParaView and checking out the correct commit
-    if [ ! -d "$PARAVIEW_SOURCE_PATH" ];
-    then
-        echo "====> Clone ParaView"
-        git clone https://gitlab.kitware.com/mdorier/paraview.git $PARAVIEW_SOURCE_PATH
-    fi
-    pushd $PARAVIEW_SOURCE_PATH
-    echo "====> Checking out correct commit"
-    git checkout $COLZA_EXP_PARAVIEW_COMMIT
-    git submodule update --init --recursive
-    echo "====> Building ParaView"
-    # Creating build directory
-    if [ -d build ];
-    then
-        echo "====> WARNING: $PARAVIEW_SOURCE_PATH/build directory already exists," \
-             "please remove it if you want a clean build"
-    else
-        mkdir build
-    fi
-    # Going in build directory and calling cmake
-    pushd build
-    cmake .. -DPARAVIEW_USE_QT=OFF \
-             -DPARAVIEW_USE_PYTHON=ON \
-             -DPARAVIEW_USE_MPI=ON \
-             -DVTK_OPENGL_HAS_OSMESA:BOOL=TRUE \
-             -DVTK_USE_X:BOOL=FALSE \
-             -DCMAKE_CXX_COMPILER=CC \
-             -DCMAKE_C_COMPILER=cc \
-             -DVTK_PYTHON_OPTIONAL_LINK=OFF \
-             -DCMAKE_BUILD_TYPE=Release \
-             -DCMAKE_INSTALL_PREFIX=$PARAVIEW_PREFIX_PATH
-    make -j 4
-    make install
-    popd # from build
-    # ParaView doesn't install the IceT headers so we have to do it
-    cp ThirdParty/IceT/vtkicet/src/include/*.h $PARAVIEW_PREFIX_PATH/include/paraview-5.8
-    popd # from $PARAVIEW_SOURCE_PATH
-    echo "====> Done building and installing ParaView"
-}
 
 function install_spack {
     # Checking if spack is already there
@@ -139,8 +84,6 @@ function install_mochi {
         echo "====> Using mochi-spack-packages at commit $COLZA_EXP_MOCHI_COMMIT"
         pushd $COLZA_EXP_MOCHI_LOCATION
         git checkout $COLZA_EXP_MOCHI_COMMIT
-        echo "====> Applying patch to add mochi-colza@0.1.1"
-        git apply $HERE/add-colza-0.1.1.patch
         popd
     fi
 }
@@ -152,8 +95,6 @@ function install_colza {
     spack env activate $COLZA_EXP_SPACK_ENV
     echo "====> Adding Mochi namespace"
     spack repo add --scope env:$COLZA_EXP_SPACK_ENV $COLZA_EXP_MOCHI_LOCATION
-    echo "====> Adding ParaView to spack environment"
-    spack python -c "import spack.config; spack.config.set('packages:paraview', {'buildable': False, 'externals': [{'spec': 'paraview@develop-mochi%gcc@9.3.0', 'prefix': '$COLZA_EXP_PREFIX_PATH/paraview'}]})"
     echo "====> Installing"
     spack install -y
     spack env deactivate
@@ -185,13 +126,13 @@ function install_mini_apps {
     cmake .. \
         -DCMAKE_CXX_COMPILER=CC \
         -DCMAKE_C_COMPILER=cc \
-        -DVTK_DIR=$COLZA_EXP_PREFIX_PATH/paraview/lib64/cmake/paraview-5.8 \
         -DENABLE_EXAMPLE=ON \
-        -DParaView_DIR=$COLZA_EXP_PREFIX_PATH/paraview/lib64/cmake/paraview-5.8 \
         -DBUILD_SHARED_LIBS=ON \
         -DCMAKE_INSTALL_PREFIX=$MINIAPP_PREFIX_PATH \
         -DENABLE_DAMARIS=ON \
         -DBOOST_ROOT=`spack location -i boost`
+#        -DVTK_DIR=$COLZA_EXP_PREFIX_PATH/paraview/lib64/cmake/paraview-5.8 \
+#        -DParaView_DIR=$COLZA_EXP_PREFIX_PATH/paraview/lib64/cmake/paraview-5.8 \
     make
     make install
     popd # build
@@ -199,10 +140,6 @@ function install_mini_apps {
     spack env deactivate
     echo "====> Done building and installing mini apps"
 }
-
-if [ "$SKIP_PARAVIEW" -eq "0" ]; then
-    install_paraview
-fi
 
 if [ "$SKIP_SPACK" -eq "0" ]; then
     install_spack
