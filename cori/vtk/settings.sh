@@ -18,4 +18,4 @@ COLZA_EXP_MOCHI_COMMIT=33e084cb84621c4a4ab2b8c76fb031f549b739fc
 # override if you want to name the environment differently
 COLZA_EXP_SPACK_ENV=colza-env
 # override if you want to use another commit/tag/branch
-COLZA_EXP_MINIAPPS_COMMIT=5b52cd05b3fd6269e84c08160d1846b9b27e51e8
+COLZA_EXP_MINIAPPS_COMMIT=f93bbe8b8236df415310148174f5196dffee071a

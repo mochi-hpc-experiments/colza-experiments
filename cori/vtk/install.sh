@@ -15,7 +15,7 @@ module load cmake/3.18.2
 
 SKIP_SPACK=0     # skip installation of spack
 SKIP_MOCHI=0     # skip installation of mochi repo
-SKIP_COLZA=0     # skip installation of colza environment
+SKIP_ENV=0     # skip installation of colza environment
 SKIP_MINI_APPS=0 # skipp installation of mini-apps
 
 while [[ $# -gt 0 ]]
@@ -29,8 +29,8 @@ do
         SKIP_MOCHI=1
         shift
         ;;
-    --skip-colza)
-        SKIP_COLZA=1
+    --skip-env)
+        SKIP_ENV=1
         shift
         ;;
     --skip-mini-apps)
@@ -88,8 +88,8 @@ function install_mochi {
     fi
 }
 
-function install_colza {
-    echo "====> Setting up Colza environment"
+function install_env {
+    echo "====> Setting up Spack environment"
     spack env create $COLZA_EXP_SPACK_ENV $HERE/spack.yaml
     echo "====> Activating environment"
     spack env activate $COLZA_EXP_SPACK_ENV
@@ -151,8 +151,8 @@ fi
 
 setup_spack
 
-if [ "$SKIP_COLZA" -eq "0" ]; then
-    install_colza
+if [ "$SKIP_ENV" -eq "0" ]; then
+    install_env
 fi
 
 if [ "$SKIP_MINI_APPS" -eq "0" ]; then
