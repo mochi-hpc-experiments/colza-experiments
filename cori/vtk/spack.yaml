@@ -248,7 +248,7 @@ spack:
       externals:
       - spec: python@3.8.5
         modules:
-        - python3/3.8-anaconda-2020.11
+        - cray-python/3.8.5.0
     tar:
       buildable: false
       version: []

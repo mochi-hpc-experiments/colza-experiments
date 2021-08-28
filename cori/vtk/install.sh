@@ -8,7 +8,8 @@ echo $HERE
 source $HERE/settings.sh
 
 echo "====> Loading modules"
-module load python3/3.8-anaconda-2020.11
+#module load python3/3.8-anaconda-2020.11
+module load cray-python/3.8.5.0
 module swap PrgEnv-intel PrgEnv-gnu
 module swap gcc/8.3.0 gcc/9.3.0
 module load cmake/3.18.2
@@ -131,8 +132,6 @@ function install_mini_apps {
         -DCMAKE_INSTALL_PREFIX=$MINIAPP_PREFIX_PATH \
         -DENABLE_DAMARIS=ON \
         -DBOOST_ROOT=`spack location -i boost`
-#        -DVTK_DIR=$COLZA_EXP_PREFIX_PATH/paraview/lib64/cmake/paraview-5.8 \
-#        -DParaView_DIR=$COLZA_EXP_PREFIX_PATH/paraview/lib64/cmake/paraview-5.8 \
     make
     make install
     popd # build

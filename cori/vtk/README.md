@@ -14,22 +14,17 @@ To install the required software, run the following command.
 
 Contrary to the `install.sh` scripts from other folders,
 this script will also install ParaView and the mini-apps.
-The former will take several hours to build, so be patient!
+The former may take several hours to build, so be patient!
 
 Note: the script installs dependencies in this order:
-- ParaView (clone in `src`, build, install in `sw`)
 - Spack (clone in `sw`)
 - Mochi (clone in `sw`)
-- Colza (create Spack environment, install Colza in it)
+- Spack environ,ent (installing Colza, ParaView, etc. in it)
 - Mini-apps (clone in `src`, build, install in `sw`)
+
 If you need to call the `install.sh` script again but some
-of the steps have already been done, use `--skip-paraview`,
-`--skip-spack`, `--skip-mochi`, `--skip-colza`, or `--skip-miniapps`.
-For example if you already successfully installed ParaView and Spack,
-use `./install.sh --skip-paraview --skip-spack`. This can be useful
-to avoid spending long hours building ParaView, in particular.
-Note that the script may ask you to delete some directories to
-avoid re-using partial builds.
+of the steps have already been done, use
+`--skip-spack`, `--skip-mochi`, `--skip-env`, or `--skip-miniapps`.
 
 ## Communication evaluation
 
