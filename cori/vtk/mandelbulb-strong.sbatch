@@ -50,7 +50,7 @@ spack env activate $COLZA_EXP_SPACK_ENV
 
 print_log "Staring servers on $SERVER_NODES nodes / $SERVER_PROCS processes"
 
-srun -C haswell -N $SERVER_NODES -n $SERVER_PROCS -c 8 -l --cpu_bind=cores \
+srun --exclusive -C haswell -N $SERVER_NODES -n $SERVER_PROCS -c 8 -l --cpu_bind=cores \
     $HERE/sw/mini-apps/bin/example/MandelbulbColza/mbserver \
     -a $PROTOCOL \
     -s $SSG_FILENAME \
@@ -69,7 +69,7 @@ done
 
 print_log "Start clients on $CLIENT_NODES nodes / $CLIENT_PROCS processes"
 
-srun -C haswell -N $CLIENT_NODES -n $CLIENT_PROCS -c 2 -l --cpu_bind=cores \
+srun --exclusive -C haswell -N $CLIENT_NODES -n $CLIENT_PROCS -c 2 -l --cpu_bind=cores \
     $HERE/sw/mini-apps/bin/example/MandelbulbColza/mbclient \
     -a $PROTOCOL \
     -s $SSG_FILENAME \

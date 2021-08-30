@@ -44,7 +44,7 @@ spack env activate $COLZA_EXP_SPACK_ENV
 
 print_log "Staring application"
 
-srun -C haswell -N $TOTAL_NODES -n $TOTAL_PROCS -c 8 -l --cpu_bind=cores \
+srun --exclusive -C haswell -N $TOTAL_NODES -n $TOTAL_PROCS -c 8 -l --cpu_bind=cores \
     $HERE/../vtk/sw/mini-apps/bin/example/MandelbulbDamaris/mbclient_damaris \
     -c $CONFIG -t $STEP \
     -s $SCRIPT &> $OUT_LOG

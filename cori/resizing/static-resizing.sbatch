@@ -31,7 +31,7 @@ function run_instance () {
     WAITTIME=$2
     OUTFILE=$LOG_DIR/static.$NPROCS.$SLURM_JOB_ID.out
     print_log "Starting staging area on $NPROCS processes"
-    srun -n $NPROCS colza-dist-server \
+    srun --exclusive -n $NPROCS colza-dist-server \
               -a ofi+gni \
               -v trace \
               -s $SSG_FILENAME \

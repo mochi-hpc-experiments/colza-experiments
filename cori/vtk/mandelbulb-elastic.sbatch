@@ -57,7 +57,7 @@ function add_instance () {
     else
         JOIN="-j"
     fi
-    srun -n $NP --tasks-per-node=1 -c 32 colza-dist-server $JOIN \
+    srun --exclusive -n $NP --tasks-per-node=1 -c 32 colza-dist-server $JOIN \
               -a ofi+gni \
               -v trace \
               -p 1000 \
@@ -79,7 +79,7 @@ spack env activate $COLZA_EXP_SPACK_ENV
 add_instance $START 30 1
 
 print_log "Starting client"
-srun -n 256 -N 16 --tasks-per-node=16 -c 2 ./sw/mini-apps/bin/example/MandelbulbColza/mbclient \
+srun --exclusive -n 256 -N 16 --tasks-per-node=16 -c 2 ./sw/mini-apps/bin/example/MandelbulbColza/mbclient \
             -a ofi+gni \
             -v warning \
             -s $SSG_FILENAME \
@@ -106,7 +106,7 @@ print_log "Killing the client"
 kill $CLIENT_PID
 
 print_log "Shutting down the staging area"
-srun -n 1 colza-dist-admin \
+srun --exclusive -n 1 colza-dist-admin \
             -a ofi+gni \
             -v trace \
             -s $SSG_FILENAME \

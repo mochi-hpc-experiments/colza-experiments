@@ -39,7 +39,7 @@ function add_instance () {
     else
         JOIN="-j"
     fi
-    srun -n $NP colza-dist-server $JOIN \
+    srun --exclusive -n $NP colza-dist-server $JOIN \
               -a ofi+gni \
               -v trace \
               -p 500 \
@@ -62,7 +62,7 @@ print_log "Starting first server instance"
 add_instance 1 30 1
 
 print_log "Starting client"
-srun -n 1 colza-dist-client \
+srun --exclusive -n 1 colza-dist-client \
             -a ofi+gni \
             -v trace \
             -s $SSG_FILENAME \
@@ -85,7 +85,7 @@ print_log "Killing client"
 kill $CLIENT_PID
 
 print_log "Shutting down the staging area"
-srun -n 1 colza-dist-admin \
+srun --exclusive -n 1 colza-dist-admin \
             -a ofi+gni \
             -v trace \
             -s $SSG_FILENAME \
