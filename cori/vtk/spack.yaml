@@ -4,6 +4,8 @@ spack:
   - mochi-colza +examples ~bedrock +drc @main %gcc@9.3.0
   - paraview @5.8.0 +mochi ~qt +mpi +python3 +osmesa %gcc@9.3.0
   - damaris %gcc@9.3.0
+  - py-mochi-margo @main %gcc@9.3.0
+  - py-mochi-ssg @main +drc %gcc@9.3.0
   - py-mochi-colza @main %gcc@9.3.0
   concretization: together
   compilers:
@@ -249,6 +251,15 @@ spack:
       - spec: python@3.8.5
         modules:
         - cray-python/3.8.5.0
+    rdma-credentials:
+      buildable: false
+      version: []
+      target: []
+      compiler: []
+      providers: {}
+      externals:
+      - spec: rdma-credentials@1.2.25
+        prefix: /opt/cray/rdma-credentials/1.2.25-7.0.1.1_6.11__g94afdc9.ari/
     tar:
       buildable: false
       version: []
