@@ -1,0 +1,11 @@
+{
+    "pipelines" : {
+        "vtk" : {
+            "library" : "libmpibackend-pipeline.so",
+            "type" : "mpibackend",
+            "config" : {
+                "script" : "src/mini-apps/example/MandelbulbColza/pipeline/mbrender_64_iso.py"
+            }
+        }
+    }
+}

@@ -1,45 +1,42 @@
 #!/bin/bash
-#SBATCH --job-name=MB-Strong
-#SBATCH --qos=debug
-#SBATCH --time=10:00
-#SBATCH --constraint=haswell
-#SBATCH --output="mb-strong-%j.out"
 
-export MPICH_GNI_NDREG_ENTRIES=1024
+JOB_ID=`tr -dc A-Za-z0-9 </dev/urandom |  head -c 14`
+MAIN_LOG="mb-weak-$JOB_ID.out"
 
-HERE=$SLURM_SUBMIT_DIR
+HERE=`dirname "$0"`
+HERE=`realpath $HERE`
 source $HERE/settings.sh
 
 METHOD=${1:-mona} # can be changed to mpi
 CONFIG=mb-$METHOD-pipeline.json
-CLIENT_NODES=16
-CLIENT_PROCS=512
-SERVER_NODES=$(( $SLURM_JOB_NUM_NODES-$CLIENT_NODES ))
-SERVER_PROCS=$(( $SERVER_NODES*4 ))
+
+NUM_NODES=4
+
+CLIENT_PROCS=${2:-2}
+SERVER_PROCS=$(( $NUM_NODES-$CLIENT_PROCS ))
 
 STEP=6
-PROTOCOL=gni
-SSG_FILENAME=colza-$SLURM_JOB_ID.ssg
+PROTOCOL=tcp
+SSG_FILENAME=colza-$JOB_ID.ssg
 SSG_SWIM_PERIOD=5000
-LOG_DIR=logs-$SLURM_JOB_ID
+LOG_DIR=logs-$JOB_ID
 mkdir $LOG_DIR
 
-BLOCKLENW=${2:-64}
-BLOCKLENH=${3:-64}
-BLOCKLEND=${4:-128}
-BLOCKNUM=2048
+BLOCKLENW=${3:-64}
+BLOCKLENH=${4:-64}
+BLOCKLEND=${5:-64}
+BLOCKNUM=$(( $SERVER_PROCS*4 ))
 
-SERVERS_OUT_LOG=$LOG_DIR/mb-strong.servers.$SLURM_JOB_ID.out
-CLIENTS_OUT_LOG=$LOG_DIR/mb-strong.clients.$SLURM_JOB_ID.out
+SERVERS_OUT_LOG=$LOG_DIR/mb-weak.servers.$JOB_ID.out
+CLIENTS_OUT_LOG=$LOG_DIR/mb-weak.clients.$JOB_ID.out
 
 export ABT_THREAD_STACKSIZE=2097152
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/mini-apps/lib
-export LD_LIBRARY_PATH=/global/common/sw/cray-sles15-x86_64/gcc-8.2.0/mesa-18.3.6-qozjngg/lib:$LD_LIBRARY_PATH
 
 function print_log() {
     MSG=$1
     NOW=`date +"%Y-%m-%d %T.%N"`
-    echo "[$NOW] $MSG"
+    echo "[$NOW] $MSG" | tee -a $MAIN_LOG
 }
 
 print_log "Loading spack"
@@ -48,9 +45,9 @@ print_log "Loading spack"
 print_log "Loading spack environment"
 spack env activate $COLZA_EXP_SPACK_ENV
 
-print_log "Staring servers on $SERVER_NODES nodes / $SERVER_PROCS processes"
+print_log "Staring servers on $SERVER_PROCS processes"
 
-srun --exclusive -C haswell -N $SERVER_NODES -n $SERVER_PROCS -c 8 -l --cpu_bind=cores \
+mpirun -n $SERVER_PROCS \
     $HERE/sw/mini-apps/bin/example/MandelbulbColza/mbserver \
     -a $PROTOCOL \
     -s $SSG_FILENAME \
@@ -67,9 +64,9 @@ do
     print_log "$servers_ready servers are ready"
 done
 
-print_log "Start clients on $CLIENT_NODES nodes / $CLIENT_PROCS processes"
+print_log "Start clients on $CLIENT_PROCS processes"
 
-srun --exclusive -C haswell -N $CLIENT_NODES -n $CLIENT_PROCS -c 2 -l --cpu_bind=cores \
+mpirun -n $CLIENT_PROCS \
     $HERE/sw/mini-apps/bin/example/MandelbulbColza/mbclient \
     -a $PROTOCOL \
     -s $SSG_FILENAME \

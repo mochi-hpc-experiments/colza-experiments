@@ -57,7 +57,7 @@ function add_instance () {
     else
         JOIN="-j"
     fi
-    srun -n $NP --tasks-per-node=1 -c 32 colza-dist-server $JOIN \
+    srun --exclusive -n $NP --tasks-per-node=1 -c 32 colza-dist-server $JOIN \
               -a ofi+gni \
               -v trace \
               -p 1000 \
@@ -79,7 +79,7 @@ spack env activate $COLZA_EXP_SPACK_ENV
 add_instance $START 30 1
 
 print_log "Starting client"
-srun -n 256 -N 16 --tasks-per-node=16 -c 2 ./sw/mini-apps/bin/example/MandelbulbColza/mbclient \
+srun --exclusive -n 256 -N 16 --tasks-per-node=16 -c 2 ./sw/mini-apps/bin/example/MandelbulbColza/mbclient \
             -a ofi+gni \
             -v warning \
             -s $SSG_FILENAME \
@@ -89,7 +89,12 @@ srun -n 256 -N 16 --tasks-per-node=16 -c 2 ./sw/mini-apps/bin/example/Mandelbulb
             -t 1200 2>&1 > $LOG_DIR/mandelbulb.client.$SLURM_JOB_ID.out &
 CLIENT_PID=$!
 
-print_log "Waiting 200 seconds"
+print_log "Waiting for client to have started"
+while ! [ -s $LOG_DIR/mandelbulb.client.$SLURM_JOB_ID.out ]; do
+    sleep 1
+done
+
+print_log "Waiting 60 sec before adding servers"
 sleep 60
 
 for (( P=$START+$INCR; P <= 8;  P=$P+$INCR ))
@@ -101,7 +106,7 @@ print_log "Killing the client"
 kill $CLIENT_PID
 
 print_log "Shutting down the staging area"
-srun -n 1 colza-dist-admin \
+srun --exclusive -n 1 colza-dist-admin \
             -a ofi+gni \
             -v trace \
             -s $SSG_FILENAME \

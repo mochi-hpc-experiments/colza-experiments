@@ -39,7 +39,7 @@ function add_instance () {
     else
         JOIN="-j"
     fi
-    srun -n $NP colza-dist-server $JOIN \
+    srun --exclusive -n $NP colza-dist-server $JOIN \
               -a ofi+gni \
               -v trace \
               -p 500 \
@@ -66,7 +66,7 @@ do
 done
 
 print_log "Shutting down the staging area"
-srun -n 1 colza-dist-admin \
+srun --exclusive -n 1 colza-dist-admin \
             -a ofi+gni \
             -v trace \
             -s $SSG_FILENAME \

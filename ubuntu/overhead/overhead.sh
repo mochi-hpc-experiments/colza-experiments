@@ -1,23 +1,23 @@
 #!/bin/bash
-#SBATCH --job-name=ColzaOverhead
-#SBATCH --qos=debug
-#SBATCH --time=00:30:00
-#SBATCH --nodes=64
-#SBATCH --tasks-per-node=1
-#SBATCH --cpus-per-task=32
-#SBATCH --constraint=haswell
-#SBATCH --output="overhead-job-%j.out"
 
-export MPICH_GNI_NDREG_ENTRIES=1024
+JOB_ID=`tr -dc A-Za-z0-9 </dev/urandom |  head -c 14`
 
-INCR=${1:-1}
-START=${2:-${INCR}}
-
-HERE=$SLURM_SUBMIT_DIR
+HERE=`dirname "$0"`
+HERE=`realpath $HERE`
 source $HERE/settings.sh
 
-SSG_FILENAME=colza-$SLURM_JOB_ID.ssg
-LOG_DIR=logs-$SLURM_JOB_ID
+HOSTFILE=$HERE/nodes.txt
+
+if [ ! -f "$HOSTFILE" ]; then
+    echo "$HOSTFILE does not exist."
+    echo "Please create this file with a list of nodes to use."
+    exit -1
+fi
+
+NUM_NODES=`cat $HOSTFILE | wc -l`
+
+SSG_FILENAME=colza.$JOB_ID.ssg
+LOG_DIR=logs-$JOB_ID
 mkdir $LOG_DIR
 
 function print_log() {
@@ -26,21 +26,28 @@ function print_log() {
     echo "[$NOW] $MSG"
 }
 
+function get_node_list() {
+    START_LINE=$1
+    NUM_NODES=$2
+    hosts=$(readarray -t ARRAY < <(tail -n+$START_LINE $HOSTFILE | head -n$NUM_NODES); \
+           IFS=','; echo "${ARRAY[*]}")
+    echo $hosts
+}
+
 function add_instance () {
     INSTANCE_NUMBER=$1
-    CREATE_GROUP=$3
     WAITTIME=$2
-    OUTFILE=$LOG_DIR/overhead.$INSTANCE_NUMBER.$SLURM_JOB_ID.out
-    print_log "Starting process $INSTANCE_NUMBER of staging area"
-    NP=$INCR
+    CREATE_GROUP=$3
+    OUTFILE=$LOG_DIR/overhead.$INSTANCE_NUMBER.$JOB_ID.out
+    HOST=$(get_node_list $INSTANCE_NUMBER 1)
+    print_log "Starting process $INSTANCE_NUMBER of staging area on $HOST"
     if [ "$CREATE_GROUP" -eq "1" ]; then
         JOIN=""
-        NP=$START
     else
         JOIN="-j"
     fi
-    srun --exclusive -n $NP colza-dist-server $JOIN \
-              -a ofi+gni \
+    mpirun -np 1 --hosts $HOST colza-dist-server $JOIN \
+              -a ofi+tcp \
               -v trace \
               -p 500 \
               -s $SSG_FILENAME \
@@ -62,21 +69,21 @@ print_log "Starting first server instance"
 add_instance 1 30 1
 
 print_log "Starting client"
-srun --exclusive -n 1 colza-dist-client \
-            -a ofi+gni \
+colza-dist-client \
+            -a ofi+tcp \
             -v trace \
             -s $SSG_FILENAME \
             -p abc \
             -i 10000 \
             --no-execute \
             --no-stage \
-            -w 1 > $LOG_DIR/overhead.client.$SLURM_JOB_ID.out 2>&1 &
+            -w 1 > $LOG_DIR/overhead.client.$JOB_ID.out 2>&1 &
 CLIENT_PID=$!
 
 sleep 15
 print_log "Starting more servers"
 
-for (( P=$START+$INCR; P <= 63;  P=$P+$INCR ))
+for (( P=2; P <= $NUM_NODES;  P=$P+1 ))
 do
     add_instance $P 15 0
 done
@@ -85,8 +92,8 @@ print_log "Killing client"
 kill $CLIENT_PID
 
 print_log "Shutting down the staging area"
-srun --exclusive -n 1 colza-dist-admin \
-            -a ofi+gni \
+colza-dist-admin \
+            -a ofi+tcp \
             -v trace \
             -s $SSG_FILENAME \
             -x shutdown
@@ -96,10 +103,7 @@ rm $SSG_FILENAME
 
 print_log "Parsing results and creating CSV file"
 python $HERE/parse-logs.py \
-    $LOG_DIR/overhead.client.$SLURM_JOB_ID.out \
-    > overhead-$SLURM_JOB_ID.csv
-
-print_log "Moving log files"
-mv overhead-job-$SLURM_JOB_ID.out $LOG_DIR
+    $LOG_DIR/overhead.client.$JOB_ID.out \
+    > overhead-$JOB_ID.csv
 
 print_log "All done!"
