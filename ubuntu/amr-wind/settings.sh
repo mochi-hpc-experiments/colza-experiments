@@ -19,3 +19,5 @@ COLZA_EXP_MOCHI_COMMIT=main
 COLZA_EXP_SPACK_ENV=colza-amr-wind-env
 # override to use a different commit/tag/branch
 COLZA_EXP_AMRWIND_COMMIT=main
+# override to use a different commit/tag/branch
+COLZA_EXP_PIPELINE_COMMIT=main

@@ -4,13 +4,13 @@ set -e
 
 HERE=`dirname $0`
 HERE=`realpath $HERE`
-echo $HERE
 source $HERE/settings.sh
 
 SKIP_SPACK=0     # skip installation of spack
 SKIP_MOCHI=0     # skip installation of mochi repo
 SKIP_COLZA=0     # skip installation of colza
 SKIP_AMRWIND=0   # skip installation of AMR-WIND
+SKIP_PIPELINE=0  # skip installation of colza pipeline
 
 while [[ $# -gt 0 ]]
 do
@@ -29,6 +29,10 @@ do
         ;;
     --skip-amr-wind)
         SKIP_AMRWIND=1
+        shift
+        ;;
+    --skip-pipeline)
+        SKIP_PIPELINE=1
         shift
         ;;
     *)
@@ -129,6 +133,35 @@ function install_amr_wind {
     echo "====> Done building and installing AMR-WIND"
 }
 
+function install_pipeline {
+    PIPELINE_SOURCE_PATH=$COLZA_EXP_SOURCE_PATH/colza-ascent-pipeline
+    PIPELINE_PREFIX_PATH=$COLZA_EXP_PREFIX_PATH/colza-ascent-pipeline
+    if [ -d $PIPELINE_PREFIX_PATH ]; then
+        echo "====> ERROR: $PIPELINE_PREFIX_PATH already exists," \
+             "please remove it or use --skip-pipeline"
+        exit -1
+    fi
+    if [ ! -d $PIPELINE_SOURCE_PATH ]; then
+        echo "====> Cloning colza-ascent-pipeline"
+        git clone --recursive https://github.com/mochi-hpc-experiments/colza-ascent-pipeline.git $PIPELINE_SOURCE_PATH
+    fi
+    echo "====> Building AMR-WIND"
+    spack env activate $COLZA_EXP_SPACK_ENV
+    pushd $PIPELINE_SOURCE_PATH
+    git checkout $COLZA_EXP_PIPELINE_COMMIT
+    if [ ! -d build ]; then
+        mkdir build
+    else
+        echo "====> WARNING: $PIPELINE_SOURCE_PATH/build exists," \
+             "remove it if you want a clean build"
+    fi
+    pushd build
+    cmake .. -DCMAKE_INSTALL_PREFIX:PATH=$PIPELINE_PREFIX_PATH
+    make
+    make install
+    spack env deactivate
+    echo "====> Done building and installing Ascent pipeline for Colza"
+}
 if [ "$SKIP_SPACK" -eq "0" ]; then
     install_spack
 fi
@@ -145,4 +178,8 @@ fi
 
 if [ "$SKIP_AMRWIND" -eq "0" ]; then
     install_amr_wind
+fi
+
+if [ "$SKIP_PIPELINE" -eq "0" ]; then
+    install_pipeline
 fi
