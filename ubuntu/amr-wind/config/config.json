@@ -1,0 +1,53 @@
+{
+    "margo": {
+        "argobots": {
+            "pools": [
+                {
+                    "name": "colza_pool",
+                    "kind": "fifo_wait"
+                }
+            ],
+            "xstreams": [
+                {
+                    "name": "colza_es",
+                    "scheduler": {
+                        "type": "basic_wait",
+                        "pools": ["colza_pool"]
+                    }
+                }
+            ]
+        },
+        "use_progress_thread": true
+    },
+    "ssg": [
+        {
+            "name": "colza_group",
+            "bootstrap": "mpi",
+            "group_file": "colza.ssg",
+            "pool": "__progress__",
+            "swim": {
+                "disabled": true
+            }
+        }
+    ],
+    "mona": [
+        {
+            "name": "colza_comm",
+            "pool": "colza_pool"
+        }
+    ],
+    "libraries": {
+        "colza": "libcolza-bedrock-module.so"
+    },
+    "providers": [
+        {
+            "name": "colza_provider",
+            "type": "colza",
+            "pool": "colza_pool",
+            "dependencies": {
+                "group": "colza_group",
+                "mona": "colza_comm"
+            }
+        }
+    ]
+}
