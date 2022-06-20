@@ -145,7 +145,7 @@ function install_pipeline {
         echo "====> Cloning colza-ascent-pipeline"
         git clone --recursive https://github.com/mochi-hpc-experiments/colza-ascent-pipeline.git $PIPELINE_SOURCE_PATH
     fi
-    echo "====> Building AMR-WIND"
+    echo "====> Building Colza Ascent Pipeline"
     spack env activate $COLZA_EXP_SPACK_ENV
     pushd $PIPELINE_SOURCE_PATH
     git checkout $COLZA_EXP_PIPELINE_COMMIT

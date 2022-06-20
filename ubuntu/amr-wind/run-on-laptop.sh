@@ -45,8 +45,10 @@ print_log "Creating experiment's directory $exp_dir"
 mkdir $exp_dir
 cd $exp_dir
 
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/colza-ascent-pipeline/lib
+
 print_log "Starting Bedrock daemon"
-mpirun -np 2 bedrock na+sm -c $BEDROCK_CONFIG 1> $BEDROCK_OUT 2> $BEDROCK_ERR &
+mpirun -np 2 bedrock na+sm -c $BEDROCK_CONFIG -v trace 1> $BEDROCK_OUT 2> $BEDROCK_ERR &
 BEDROCK_PID=$!
 
 print_log "Waiting for SSG file to become available"

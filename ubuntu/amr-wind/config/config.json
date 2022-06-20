@@ -46,7 +46,15 @@
             "pool": "colza_pool",
             "dependencies": {
                 "group": "colza_group",
-                "mona": "colza_comm"
+                "mona_instance": "colza_comm"
+            },
+            "config": {
+                "pipelines": {
+                    "colza_ascent_pipeline": {
+                        "library": "libcolza-ascent-pipeline.so",
+                        "type": "ascent"
+                    }
+                }
             }
         }
     ]
