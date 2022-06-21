@@ -7,7 +7,7 @@ spack:
   - mpich
   - mochi-colza@0.2.0+bedrock
   - mochi-mona@0.2.1+mpi
-  - mochi-bedrock+mpi+mona
+  - mochi-bedrock@0.5.1+mpi+mona
   - jq
   concretizer:
     unify: true

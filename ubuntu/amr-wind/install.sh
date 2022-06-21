@@ -126,6 +126,7 @@ function install_amr_wind {
              -DAscent_DIR:PATH=`spack location -i ascent`/lib/cmake/ascent \
              -DConduit_DIR:PATH=`spack location -i conduit` \
              -DCMAKE_INSTALL_PREFIX:PATH=$AMRWIND_PREFIX_PATH \
+             -DAMR_WIND_ENABLE_COLZA:BOOL=ON \
              -DAMR_WIND_ENABLE_MPI:BOOL=ON
     make
     make install

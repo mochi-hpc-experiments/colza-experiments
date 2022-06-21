@@ -52,7 +52,11 @@
                 "pipelines": {
                     "colza_ascent_pipeline": {
                         "library": "libcolza-ascent-pipeline.so",
-                        "type": "ascent"
+                        "type": "ascent",
+                        "config": {
+                            "ascent_options": {},
+                            "comm_type": "mona"
+                        }
                     }
                 }
             }
