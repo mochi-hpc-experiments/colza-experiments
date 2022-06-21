@@ -54,7 +54,9 @@
                         "library": "libcolza-ascent-pipeline.so",
                         "type": "ascent",
                         "config": {
-                            "ascent_options": {},
+                            "ascent_options": {
+                                "actions_file": "../actions/volume.yaml"
+                            },
                             "comm_type": "mona"
                         }
                     }
