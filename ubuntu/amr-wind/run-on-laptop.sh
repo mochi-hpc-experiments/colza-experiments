@@ -51,7 +51,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/colza-ascent-pipeline/lib
 
 print_log "Starting Bedrock daemon"
 MPI_WRAPPERS=`spack location -i mochi-mona`/lib/libmona-mpi-wrappers.so
-mpirun -np 2 -env LD_PRELOAD $MPI_WRAPPERS \
+mpirun -np 1 -env LD_PRELOAD $MPI_WRAPPERS -prepend-rank \
     bedrock $PROTOCOL -c $BEDROCK_CONFIG -v trace 1> $BEDROCK_OUT 2> $BEDROCK_ERR &
 BEDROCK_PID=$!
 

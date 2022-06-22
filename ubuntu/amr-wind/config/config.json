@@ -55,9 +55,10 @@
                         "type": "ascent",
                         "config": {
                             "ascent_options": {
-                                "actions_file": "../actions/volume.yaml"
+                                "actions_file": "../actions/default.yaml"
                             },
-                            "comm_type": "mona"
+                            "comm_type": "mona",
+                            "log_wrapped_calls": false
                         }
                     }
                 }
