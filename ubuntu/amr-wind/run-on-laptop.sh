@@ -15,11 +15,9 @@ source $HERE/activate.sh
 PROTOCOL=ofi+tcp
 
 BEDROCK_CONFIG=$HERE/config/config.json
-BEDROCK_OUT=bedrock.out
-BEDROCK_ERR=bedrock.err
+BEDROCK_OUT="bedrock.%r.out"
+BEDROCK_ERR="bedrock.%r.err"
 BEDROCK_SSG_FILE=$(cat $BEDROCK_CONFIG | jq -r ".ssg|.[0]|.group_file")
-BEDROCK_SHUTDOWN_OUT=bedrock-shutdown.out
-BEDROCK_SHUTDOWN_ERR=bedrock-shutdown.err
 
 function ensure_bedrock_is_alive() {
     $(kill -0 $BEDROCK_PID)
@@ -51,8 +49,10 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/colza-ascent-pipeline/lib
 
 print_log "Starting Bedrock daemon"
 MPI_WRAPPERS=`spack location -i mochi-mona`/lib/libmona-mpi-wrappers.so
-mpirun -np 1 -env LD_PRELOAD $MPI_WRAPPERS -prepend-rank \
-    bedrock $PROTOCOL -c $BEDROCK_CONFIG -v trace 1> $BEDROCK_OUT 2> $BEDROCK_ERR &
+mpirun -np 2 -env LD_PRELOAD $MPI_WRAPPERS \
+       -outfile-pattern $BEDROCK_OUT \
+       -errfile-pattern $BEDROCK_ERR \
+    bedrock $PROTOCOL -c $BEDROCK_CONFIG -v info &
 BEDROCK_PID=$!
 
 print_log "Waiting for SSG file to become available"
@@ -69,9 +69,9 @@ print_log "Starting AMR-WIND"
 AMR_WIND=$COLZA_EXP_PREFIX_PATH/amr-wind/bin/amr_wind
 AMR_WIND_INPUT=$HERE/input/laptop_scale.damBreak.i
 
-mpirun -np 1 $AMR_WIND $AMR_WIND_INPUT
+mpirun -np 2 $AMR_WIND $AMR_WIND_INPUT
 
 print_log "Shutting down servers"
-bedrock-shutdown $PROTOCOL -s $BEDROCK_SSG_FILE 1> $BEDROCK_SHUTDOWN_OUT 2> $BEDROCK_SHUTDOWN_ERR
+mpirun -np 1 bedrock-shutdown $PROTOCOL -s $BEDROCK_SSG_FILE
 
 print_log "Terminating"
