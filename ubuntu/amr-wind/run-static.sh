@@ -1,13 +1,37 @@
 #!/bin/bash
 
-HERE=`dirname $0`
-HERE=`realpath $HERE`
-
 function print_log() {
     MSG=$1
     NOW=`date +"%Y-%m-%d %T.%N"`
     echo "[$NOW] $MSG" | tee -a $MAIN_LOG
 }
+
+HERE=`dirname $0`
+HERE=`realpath $HERE`
+
+HOSTFILE=$HERE/hosts.txt
+readarray -t HOSTS < $HOSTFILE
+NUM_HOSTS=${#HOSTS[@]}
+
+NUM_AMRWIND_HOSTS=${1:-2}
+NUM_COLZA_HOSTS=${2:-2}
+
+if (( $NUM_AMRWIND_HOSTS + $NUM_COLZA_HOSTS > $NUM_HOSTS )); then
+    print_log "ERROR: Not enough hosts in $HOSTFILE to run $NUM_AMRWIND_HOSTS AMR-WIND processes and $NUM_COLZA_HOSTS Colza processes"
+    exit -1
+fi
+if (( $NUM_AMRWIND_HOSTS < $NUM_COLZA_HOSTS )); then
+    print_log "ERROR: Cannot run with NUM_AMRWIND_HOSTS ($NUM_AMRWIND_HOSTS) < NUM_COLZA_HOSTS ($NUM_COLZA_HOSTS)"
+    exit -1
+fi
+
+HOSTS_FOR_AMRWIND=$(printf ",%s" "${HOSTS[@]:0:$NUM_AMRWIND_HOSTS}")
+HOSTS_FOR_AMRWIND=${HOSTS_FOR_AMRWIND:1}
+
+HOSTS_FOR_COLZA=$(printf ",%s" "${HOSTS[@]:$NUM_AMRWIND_HOSTS:$NUM_COLZA_HOSTS}")
+HOSTS_FOR_COLZA=${HOSTS_FOR_COLZA:1}
+
+HOSTS_FOR_SHUTDOWN="${HOSTS[0]}"
 
 print_log "Activating environment"
 source $HERE/activate.sh
@@ -49,7 +73,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/colza-ascent-pipeline/lib
 
 print_log "Starting Bedrock daemon"
 MPI_WRAPPERS=`spack location -i mochi-mona`/lib/libmona-mpi-wrappers.so
-mpirun -np 2 -env LD_PRELOAD $MPI_WRAPPERS \
+mpirun -hosts $HOSTS_FOR_COLZA -np 2 -env LD_PRELOAD $MPI_WRAPPERS \
        -outfile-pattern $BEDROCK_OUT \
        -errfile-pattern $BEDROCK_ERR \
     bedrock $PROTOCOL -c $BEDROCK_CONFIG -v info &
@@ -69,9 +93,9 @@ print_log "Starting AMR-WIND"
 AMR_WIND=$COLZA_EXP_PREFIX_PATH/amr-wind/bin/amr_wind
 AMR_WIND_INPUT=$HERE/input/laptop_scale.damBreak.i
 
-mpirun -np 2 $AMR_WIND $AMR_WIND_INPUT
+mpirun -hosts $HOSTS_FOR_AMRWIND -np 2 $AMR_WIND $AMR_WIND_INPUT
 
 print_log "Shutting down servers"
-mpirun -np 1 bedrock-shutdown $PROTOCOL -s $BEDROCK_SSG_FILE
+mpirun -hosts $HOSTS_FOR_SHUTDOWN -np 1 bedrock-shutdown $PROTOCOL -s $BEDROCK_SSG_FILE
 
 print_log "Terminating"
