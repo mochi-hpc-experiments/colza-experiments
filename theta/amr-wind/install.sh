@@ -43,6 +43,10 @@ do
     esac
 done
 
+module swap PrgEnv-intel PrgEnv-gnu
+module load gcc/9.3.0
+module load cmake/3.20.4
+
 function install_spack {
     # Checking if spack is already there
     if [ -d $COLZA_EXP_SPACK_LOCATION ];
@@ -128,7 +132,9 @@ function install_amr_wind {
              -DConduit_DIR:PATH=`spack location -i conduit` \
              -DCMAKE_INSTALL_PREFIX:PATH=$AMRWIND_PREFIX_PATH \
              -DAMR_WIND_ENABLE_COLZA:BOOL=ON \
-             -DAMR_WIND_ENABLE_MPI:BOOL=ON
+             -DAMR_WIND_ENABLE_MPI:BOOL=ON \
+             -DCMAKE_CXX_COMPILER=CC \
+             -DCMAKE_C_COMPILER=cc
     make
     make install
     spack env deactivate
@@ -158,7 +164,9 @@ function install_pipeline {
              "remove it if you want a clean build"
     fi
     pushd build
-    cmake .. -DCMAKE_INSTALL_PREFIX:PATH=$PIPELINE_PREFIX_PATH
+    cmake .. -DCMAKE_INSTALL_PREFIX:PATH=$PIPELINE_PREFIX_PATH \
+             -DCMAKE_CXX_COMPILER=CC \
+             -DCMAKE_C_COMPILER=cc
     make
     make install
     spack env deactivate
