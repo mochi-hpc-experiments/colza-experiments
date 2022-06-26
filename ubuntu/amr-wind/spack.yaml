@@ -9,3 +9,11 @@ spack:
   - jq
   concretizer:
     unify: true
+  packages:
+    all:
+      providers:
+        mpi: [mpich]
+    mercury:
+      variants: ~boostsys+debug~checksum
+    libfabric:
+      variants: fabrics=tcp,rxm,sockets

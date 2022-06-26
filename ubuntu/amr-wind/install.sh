@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+export SPACK_DISABLE_LOCAL_CONFIG=true
 
 HERE=`dirname $0`
 HERE=`realpath $HERE`
