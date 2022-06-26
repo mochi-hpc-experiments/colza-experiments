@@ -1,5 +1,6 @@
 spack:
   specs:
+  - cmake
   - ascent@0.8.0+vtkh~openmp~test~fortran
   - vtk-m+mpi
   - mpich
