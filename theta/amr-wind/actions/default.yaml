@@ -1,0 +1,25 @@
+-
+  action: "add_pipelines"
+  pipelines:
+    pl1:
+      f1:
+        type: "composite_vector"
+        params:
+          field1: "velocityx"
+          field2: "velocityy"
+          field3: "velocityz"
+          output_name: "velocity"
+      f2:
+        type: "vector_magnitude"
+        params:
+          field: "velocity"
+          output_name: "magnitude"
+-
+  action: "add_scenes"
+  scenes:
+    s1:
+      plots:
+        p1:
+          type: "pseudocolor"
+          field: "magnitude"
+          pipeline: "pl1"
