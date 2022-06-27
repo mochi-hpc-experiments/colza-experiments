@@ -18,3 +18,5 @@ spack:
       variants: ~boostsys+debug~checksum
     libfabric:
       variants: fabrics=tcp,rxm,sockets
+    mpich:
+      version: [3.4.3]
