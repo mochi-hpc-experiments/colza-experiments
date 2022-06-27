@@ -73,7 +73,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/colza-ascent-pipeline/lib
 
 print_log "Starting Bedrock daemon"
 MPI_WRAPPERS=`spack location -i mochi-mona`/lib/libmona-mpi-wrappers.so
-mpirun -hosts $HOSTS_FOR_COLZA -np 2 -env LD_PRELOAD $MPI_WRAPPERS \
+mpirun -hosts $HOSTS_FOR_COLZA -np $NUM_COLZA_HOSTS -env LD_PRELOAD $MPI_WRAPPERS \
        -outfile-pattern $BEDROCK_OUT \
        -errfile-pattern $BEDROCK_ERR \
     bedrock $PROTOCOL -c $BEDROCK_CONFIG -v info &
@@ -93,7 +93,7 @@ print_log "Starting AMR-WIND"
 AMR_WIND=$COLZA_EXP_PREFIX_PATH/amr-wind/bin/amr_wind
 AMR_WIND_INPUT=$HERE/input/laptop_scale.damBreak.i
 
-mpirun -hosts $HOSTS_FOR_AMRWIND -np 2 $AMR_WIND $AMR_WIND_INPUT
+mpirun -hosts $HOSTS_FOR_AMRWIND -np $NUM_AMRWIND_HOSTS $AMR_WIND $AMR_WIND_INPUT
 
 print_log "Shutting down servers"
 mpirun -hosts $HOSTS_FOR_SHUTDOWN -np 1 bedrock-shutdown $PROTOCOL -s $BEDROCK_SSG_FILE
