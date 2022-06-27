@@ -5,8 +5,9 @@ spack:
   - vtk-m+mpi
   - mpich
   - mochi-colza@0.2.1+bedrock
-  - mochi-mona@0.2.3+mpi
+  - mochi-mona@main+mpi
   - mochi-bedrock@0.5.2+ssg+mpi+mona
+  - mochi-ssg@main+mpi
   - jq
   concretizer:
     unify: true
