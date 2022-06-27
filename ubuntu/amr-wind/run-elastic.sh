@@ -91,7 +91,7 @@ MPI_WRAPPERS=`spack location -i mochi-mona`/lib/libmona-mpi-wrappers.so
 mpirun -hosts $HOSTS_FOR_COLZA_START -np $NUM_COLZA_HOSTS_MIN -env LD_PRELOAD $MPI_WRAPPERS \
        -outfile-pattern $BEDROCK_OUT \
        -errfile-pattern $BEDROCK_ERR \
-    bedrock $PROTOCOL -c $BEDROCK_CONFIG -v info &
+    bedrock $PROTOCOL -c $BEDROCK_CONFIG -v trace &
 BEDROCK_PID=$!
 
 print_log "Waiting for SSG file to become available"
@@ -119,7 +119,6 @@ AMRWIND_PID=$!
 N=$(($NUM_COLZA_HOSTS_MIN + 1))
 M=$NUM_COLZA_HOSTS_MAX
 S=$NUM_NEW_COLZA_PER_STEP
-echo "N=$N, M=$M, S=$S"
 for K in $(seq $N $S $M)
 do
     sleep 30
@@ -131,7 +130,7 @@ do
     mpirun -hosts $NEW_HOSTS_FOR_COLZA -np $S -env LD_PRELOAD $MPI_WRAPPERS \
        -outfile-pattern $BEDROCK_OUT \
        -errfile-pattern $BEDROCK_ERR \
-    bedrock $PROTOCOL -c $BEDROCK_CONFIG -v info &
+    bedrock $PROTOCOL -c $BEDROCK_CONFIG -v trace &
     for i in $(seq 1 $S)
     do
         unset HOSTS_FOR_COLZA_EXTRA[0]
