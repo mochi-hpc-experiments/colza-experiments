@@ -17,6 +17,7 @@ NUM_AMRWIND_HOSTS=${1:-4}
 NUM_COLZA_HOSTS_MIN=${2:-1}
 NUM_COLZA_HOSTS_MAX=${3:-4}
 NUM_NEW_COLZA_PER_STEP=${4:-1}
+TIME_BETWEEN_INCREASES=${5:-30}
 
 if (( $NUM_AMRWIND_HOSTS + $NUM_COLZA_HOSTS_MAX > $NUM_HOSTS )); then
     print_log "ERROR: Not enough hosts in $HOSTFILE to run $NUM_AMRWIND_HOSTS AMR-WIND processes and $NUM_COLZA_HOSTS Colza processes"
@@ -121,7 +122,7 @@ M=$NUM_COLZA_HOSTS_MAX
 S=$NUM_NEW_COLZA_PER_STEP
 for K in $(seq $N $S $M)
 do
-    sleep 30
+    sleep $TIME_BETWEEN_INCREASES
     BEDROCK_OUT="bedrock.$K.%r.out"
     BEDROCK_ERR="bedrock.$K.%r.err"
     NEW_HOSTS_FOR_COLZA=$(printf ",%s" "${HOSTS_FOR_COLZA_EXTRA[@]:0:$S}")

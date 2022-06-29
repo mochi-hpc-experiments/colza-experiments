@@ -55,3 +55,12 @@ file.
 
 Feel free to use a different input file for AMR-WIND to accomodate
 for the scale. The previous section explained how to do that.
+
+## Running elastic experiments
+
+Moving on to proper elastic experiments is simply a matter of calling
+`./run-elastic.sh N m M S T` where `N` is still the number of hosts
+for AMR-WIND, but `m` and `M` are the minimum and maximum number of hosts
+for Colza, respectively, `S` is the number of hosts to add at every
+increase of the staging area, and `T` is the time in seconds to wait
+between each increase.
