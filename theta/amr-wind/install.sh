@@ -44,7 +44,7 @@ do
 done
 
 module swap PrgEnv-intel PrgEnv-gnu
-module load gcc/9.3.0
+module swap gcc/9.3.0 gcc/11.2.0
 module load cmake/3.20.4
 
 function install_spack {
