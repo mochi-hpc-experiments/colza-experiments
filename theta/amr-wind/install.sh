@@ -2,6 +2,7 @@
 
 set -e
 export SPACK_DISABLE_LOCAL_CONFIG=true
+export CRAYPE_LINK_TYPE=dynamic
 
 HERE=`dirname $0`
 HERE=`realpath $HERE`
