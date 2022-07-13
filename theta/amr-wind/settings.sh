@@ -7,6 +7,8 @@
 COLZA_EXP_SOURCE_PATH=$HERE/src # where sources will be downloaded
 COLZA_EXP_PREFIX_PATH=$HERE/sw  # where software will be installed
 
+# IMPT: override to use your protection domain on Theta
+COLZA_PROTECTION_DOMAIN=srameshascent
 # override if you want to use your own spack
 COLZA_EXP_SPACK_LOCATION=$COLZA_EXP_PREFIX_PATH/spack
 # override if you want to use another tag/version/commit of spack

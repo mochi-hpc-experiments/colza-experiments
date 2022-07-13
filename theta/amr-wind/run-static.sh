@@ -35,9 +35,8 @@ source $HERE/settings.sh
 source $COLZA_EXP_SPACK_LOCATION/share/spack/setup-env.sh
 spack env activate $COLZA_EXP_SPACK_ENV
 
-PDOMAIN="colzamdorier"
 print_log "Setting up protection domain"
-apstat -P | grep ${PDOMAIN} || apmgr pdomain -c -u ${PDOMAIN}
+apstat -P | grep ${COLZA_PROTECTION_DOMAIN} || apmgr pdomain -c -u ${COLZA_PROTECTION_DOMAIN}
 
 PROTOCOL=ofi+gni
 
@@ -76,7 +75,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/colza-ascent-pipeline/lib
 
 print_log "Starting Bedrock daemon"
 MPI_WRAPPERS=`spack location -i mochi-mona`/lib/libmona-mpi-wrappers.so
-aprun -cc none -n $NUM_COLZA_HOSTS -N 1 -e LD_PRELOAD=$MPI_WRAPPERS -p ${PDOMAIN} \
+aprun -cc none -n $NUM_COLZA_HOSTS -N 1 -e LD_PRELOAD=$MPI_WRAPPERS -p ${COLZA_PROTECTION_DOMAIN} \
     bedrock $PROTOCOL -c $BEDROCK_CONFIG -v trace 1> $BEDROCK_OUT 2> $BEDROCK_ERR &
 BEDROCK_PID=$!
 
@@ -95,12 +94,12 @@ print_log "Starting AMR-WIND"
 AMR_WIND=$COLZA_EXP_PREFIX_PATH/amr-wind/bin/amr_wind
 AMR_WIND_INPUT=$HERE/input/laptop_scale.damBreak.i
 
-aprun -n $NUM_AMRWIND_HOSTS -N 1 -cc none -p $PDOMAIN $AMR_WIND $AMR_WIND_INPUT
+aprun -n $NUM_AMRWIND_HOSTS -N 1 -cc none -p $COLZA_PROTECTION_DOMAIN $AMR_WIND $AMR_WIND_INPUT
 
 print_log "Shutting down servers"
-aprun -n 1 -N 1 -cc none -p $PDOMAIN bedrock-shutdown $PROTOCOL -s $BEDROCK_SSG_FILE
+aprun -n 1 -N 1 -cc none -p $COLZA_PROTECTION_DOMAIN bedrock-shutdown $PROTOCOL -s $BEDROCK_SSG_FILE
 
 print_log "Destroying protection domain"
-apmgr pdomain -r -u ${PDOMAIN}
+apmgr pdomain -r -u ${COLZA_PROTECTION_DOMAIN}
 
 print_log "Terminating"
