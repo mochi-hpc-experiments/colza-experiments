@@ -8,7 +8,7 @@ time.init_shrink = 0.001
 #¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
 # TIME STEP COMPUTATION #
 #.......................................#
-time.fixed_dt         =   0.001        # Use this constant dt if > 0
+time.fixed_dt         =   -0.001        # Use this constant dt if > 0
 time.cfl              =   0.8           # CFL factor
 time.initial_dt = 0.001
 

@@ -20,6 +20,6 @@ COLZA_EXP_MOCHI_COMMIT=main
 # override if you want to name the environment differently
 COLZA_EXP_SPACK_ENV=colza-amr-wind-env
 # override to use a different commit/tag/branch
-COLZA_EXP_AMRWIND_COMMIT=dev-colza
+COLZA_EXP_AMRWIND_COMMIT=c1531ecc7ccccef0956cb72e3461535375dbe4f6
 # override to use a different commit/tag/branch
 COLZA_EXP_PIPELINE_COMMIT=main
