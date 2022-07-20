@@ -112,9 +112,12 @@ function install_amr_wind {
         git clone --recursive https://github.com/mdorier/amr-wind.git $AMRWIND_SOURCE_PATH
     fi
     echo "====> Building AMR-WIND"
-    spack env activate $COLZA_EXP_SPACK_ENV
     pushd $AMRWIND_SOURCE_PATH
     git checkout $COLZA_EXP_AMRWIND_COMMIT
+    git submodule init
+    git submodule update
+    git apply ../../colza-amr-wind.patch
+    spack env activate $COLZA_EXP_SPACK_ENV
     if [ ! -d build ]; then
         mkdir build
     else
