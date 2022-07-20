@@ -1,8 +1,8 @@
 #!/bin/bash
 #COBALT -A radix-io
-#COBALT -t 0:10:00
+#COBALT -t 0:30:00
 #COBALT --mode script
-#COBALT -n 4
+#COBALT -n 8
 #COBALT -q debug-flat-quad
 #COBALT --attrs filesystems=home,grand,eagle,theta-fs0
 
@@ -18,11 +18,11 @@ HERE=`dirname $0`
 HERE=`realpath $HERE`
 
 NUM_HOSTS=$COBALT_JOBSIZE
-NUM_AMRWIND_HOSTS=${1:-2}
-NUM_COLZA_HOSTS=${2:-2}
+NUM_AMRWIND_HOSTS=4
+NUM_COLZA_HOSTS=4
 
 if (( $NUM_AMRWIND_HOSTS + $NUM_COLZA_HOSTS > $NUM_HOSTS )); then
-    print_log "ERROR: Not enough hosts to run $NUM_AMRWIND_HOSTS AMR-WIND processes and $NUM_COLZA_HOSTS Colza processes"
+    print_log "ERROR: Not enough hosts to run $NUM_AMRWIND_HOSTS AMR-WIND processes and $NUM_COLZA_HOSTS Colza processes with"
     exit -1
 fi
 if (( $NUM_AMRWIND_HOSTS < $NUM_COLZA_HOSTS )); then
@@ -69,13 +69,17 @@ exp_date=$(date +"%Y-%m-%d-%H-%M")
 exp_dir="exp-$exp_date-$exp_id"
 print_log "Creating experiment's directory $exp_dir"
 mkdir $exp_dir
+export AMS_WORKING_DIR=/home/sramesh/MOCHI/colza-experiments/theta/amr-wind #Change this
+export AMS_ACTIONS_FILE=/home/sramesh/MOCHI/colza-experiments/theta/amr-wind/actions/default.yaml #Change this
 cd $exp_dir
 
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/colza-ascent-pipeline/lib
 
 print_log "Starting Bedrock daemon"
+COLZA_NUM_PROCS=8 #Change this if required
+COLZA_NUM_PROCS_PER_NODE=2 #Change this if required
 MPI_WRAPPERS=`spack location -i mochi-mona`/lib/libmona-mpi-wrappers.so
-aprun -cc none -n $NUM_COLZA_HOSTS -N 1 -e LD_PRELOAD=$MPI_WRAPPERS -p ${COLZA_PROTECTION_DOMAIN} \
+aprun -cc none -n $COLZA_NUM_PROCS -N $COLZA_NUM_PROCS_PER_NODE -e LD_PRELOAD=$MPI_WRAPPERS -p ${COLZA_PROTECTION_DOMAIN} \
     bedrock $PROTOCOL -c $BEDROCK_CONFIG -v trace 1> $BEDROCK_OUT 2> $BEDROCK_ERR &
 BEDROCK_PID=$!
 
@@ -92,9 +96,11 @@ print_log "Servers are ready"
 
 print_log "Starting AMR-WIND"
 AMR_WIND=$COLZA_EXP_PREFIX_PATH/amr-wind/bin/amr_wind
-AMR_WIND_INPUT=$HERE/input/laptop_scale.damBreak.i
+AMR_WIND_INPUT=$HERE/input/240_process_scale.damBreak.i
+AMR_WIND_NUM_PROCS=240 #Change this if required
+AMR_WIND_NUM_PROCS_PER_NODE=60 #Change this if required
 
-aprun -n $NUM_AMRWIND_HOSTS -N 1 -cc none -p $COLZA_PROTECTION_DOMAIN $AMR_WIND $AMR_WIND_INPUT
+aprun -n $AMR_WIND_NUM_PROCS -N $AMR_WIND_NUM_PROCS_PER_NODE -cc none -p $COLZA_PROTECTION_DOMAIN $AMR_WIND $AMR_WIND_INPUT
 
 print_log "Shutting down servers"
 aprun -n 1 -N 1 -cc none -p $COLZA_PROTECTION_DOMAIN bedrock-shutdown $PROTOCOL -s $BEDROCK_SSG_FILE
