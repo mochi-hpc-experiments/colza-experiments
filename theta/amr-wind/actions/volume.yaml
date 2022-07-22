@@ -1,0 +1,16 @@
+-
+    action: "add_scenes"
+    scenes:
+        s1:
+            plots:
+                p1:
+                    type: "volume"
+                    field: "velocityx"
+                    min_value: 0
+                    max_value: 100
+            renders:
+                r1:
+                    image_width: 600
+                    image_height: 400
+                    image_prefix: "amr_volume"
+                    annotations: false

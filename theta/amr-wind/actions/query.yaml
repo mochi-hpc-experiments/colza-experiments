@@ -1,0 +1,15 @@
+-
+  action: "add_queries"
+  queries:
+    q1:
+      params:
+        expression: "max(field('velocityx'))"
+        name: "max_velocityx"
+    q2:
+      params:
+        expression: "max(field('velocityy'))"
+        name: "max_velocityy"
+    q3:
+      params:
+        expression: "max(field('velocityz'))"
+        name: "max_velocityz"
