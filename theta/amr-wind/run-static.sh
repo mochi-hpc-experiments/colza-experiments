@@ -1,6 +1,6 @@
 #!/bin/bash
 #COBALT -A radix-io
-#COBALT -t 0:10:00
+#COBALT -t 0:30:00
 #COBALT --mode script
 #COBALT -n 8
 #COBALT -q debug-flat-quad
@@ -97,7 +97,7 @@ print_log "Servers are ready"
 
 print_log "Starting AMR-WIND"
 AMR_WIND=$COLZA_EXP_PREFIX_PATH/amr-wind/bin/amr_wind
-AMR_WIND_INPUT=$HERE/input/laptop_scale.damBreak.i
+AMR_WIND_INPUT=$HERE/input/240_process_scale.damBreak.i
 
 AMRWIND_OUT="amrwind.out"
 AMRWIND_ERR="amrwind.err"
