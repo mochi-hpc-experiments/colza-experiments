@@ -1,11 +1,13 @@
 #!/bin/bash
 
 set -e
-export SPACK_DISABLE_LOCAL_CONFIG=true
 
 HERE=`dirname $0`
 HERE=`realpath $HERE`
 source $HERE/settings.sh
+
+export SPACK_DISABLE_LOCAL_CONFIG=true
+export SPACK_USER_CACHE_PATH=$HERE/sw/.spack
 
 SKIP_SPACK=0     # skip installation of spack
 SKIP_MOCHI=0     # skip installation of mochi repo
@@ -109,7 +111,7 @@ function install_amr_wind {
     fi
     if [ ! -d $AMRWIND_SOURCE_PATH ]; then
         echo "====> Cloning AMR-WIND"
-        git clone --recursive https://github.com/mdorier/amr-wind.git $AMRWIND_SOURCE_PATH
+        git clone https://github.com/Exawind/amr-wind.git $AMRWIND_SOURCE_PATH
     fi
     echo "====> Building AMR-WIND"
     pushd $AMRWIND_SOURCE_PATH

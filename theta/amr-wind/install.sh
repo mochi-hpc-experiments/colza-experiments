@@ -1,12 +1,14 @@
 #!/bin/bash
 
 set -e
-export SPACK_DISABLE_LOCAL_CONFIG=true
 export CRAYPE_LINK_TYPE=dynamic
 
 HERE=`dirname $0`
 HERE=`realpath $HERE`
 source $HERE/settings.sh
+
+export SPACK_DISABLE_LOCAL_CONFIG=true
+export SPACK_USER_CACHE_PATH=$HERE/sw/.spack
 
 SKIP_SPACK=0     # skip installation of spack
 SKIP_MOCHI=0     # skip installation of mochi repo
