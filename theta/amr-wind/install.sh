@@ -109,7 +109,6 @@ function install_colza {
 function install_amr_wind {
     AMRWIND_SOURCE_PATH=$COLZA_EXP_SOURCE_PATH/amr-wind
     AMRWIND_PREFIX_PATH=$COLZA_EXP_PREFIX_PATH/amr-wind
-    AMRWIND_SOURCE_REPO=https://github.com/srini009/amr-wind.git
     if [ -d $AMRWIND_PREFIX_PATH ]; then
         echo "====> ERROR: $AMRWIND_PREFIX_PATH already exists," \
              "please remove it or use --skip-amr-wind"
@@ -117,7 +116,7 @@ function install_amr_wind {
     fi
     if [ ! -d $AMRWIND_SOURCE_PATH ]; then
         echo "====> Cloning AMR-WIND"
-        git clone $AMRWIND_SOURCE_REPO $AMRWIND_SOURCE_PATH
+        git clone https://github.com/Exawind/amr-wind.git $AMRWIND_SOURCE_PATH
     fi
     echo "====> Building AMR-WIND"
     spack env activate $COLZA_EXP_SPACK_ENV
@@ -125,8 +124,7 @@ function install_amr_wind {
     git checkout $COLZA_EXP_AMRWIND_COMMIT
     git submodule init
     git submodule update
-    #Uncomment this line if you are using mdorier's repo
-    #git apply ../../colza-amr-wind.patch
+    git apply ../../colza-amr-wind.patch
     if [ ! -d build ]; then
         mkdir build
     else

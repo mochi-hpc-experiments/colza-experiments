@@ -22,12 +22,9 @@
     "ssg": [
         {
             "name": "colza_group",
-            "bootstrap": "mpi",
+            "bootstrap": "mpi|join",
             "group_file": "colza.ssg",
-            "pool": "__progress__",
-            "swim": {
-                "disabled": true
-            }
+            "pool": "__progress__"
         }
     ],
     "mona": [

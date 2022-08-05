@@ -67,15 +67,15 @@ xhi.type = "slip_wall"
 zlo.type = "slip_wall"
 zhi.type = "slip_wall"
 
-incflo.post_processing = ascent
-ascent.type = Ascent
-ascent.fields = velocity
-output_frequency = 5
+#incflo.post_processing = ascent
+#ascent.type = Ascent
+#ascent.fields = velocity
+#output_frequency = 5
 
-#incflo.post_processing = colza
-#colza.type = Colza
-#colza.fields = velocity
-#colza.protocol = "ofi+gni"
-#colza.provider_id = 0
-#colza.ssg_file = "colza.ssg"
-#colza.pipeline_name = "colza_ascent_pipeline"
+incflo.post_processing = colza
+colza.type = Colza
+colza.fields = velocity
+colza.protocol = "ofi+gni"
+colza.provider_id = 0
+colza.ssg_file = "colza.ssg"
+colza.pipeline_name = "colza_ascent_pipeline"
