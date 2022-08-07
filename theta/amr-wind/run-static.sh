@@ -1,6 +1,6 @@
 #!/bin/bash
 #COBALT -A radix-io
-#COBALT -t 0:30:00
+#COBALT -t 1:00:00
 #COBALT --mode script
 #COBALT -n 8
 #COBALT -q debug-flat-quad
@@ -76,11 +76,21 @@ print_log "Creating experiment's directory $exp_dir"
 mkdir $exp_dir
 cd $exp_dir
 
+tee -a setup.txt <<END
+NUM_NODES=$NUM_NODES
+NUM_AMRWIND_PROCS=$NUM_AMRWIND_PROCS
+NUM_AMRWIND_PROCS_PER_NODE=$NUM_AMRWIND_PROCS_PER_NODE
+NUM_AMRWIND_NODES=$NUM_AMRWIND_NODES
+NUM_COLZA_PROCS=$NUM_COLZA_PROCS
+NUM_COLZA_PROCS_PER_NODE=$NUM_COLZA_PROCS_PER_NODE
+NUM_COLZA_NODES=$NUM_COLZA_NODES
+END
+
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HERE/sw/colza-ascent-pipeline/lib
 
 print_log "Starting Bedrock daemon"
 MPI_WRAPPERS=`spack location -i mochi-mona`/lib/libmona-mpi-wrappers.so
-aprun -cc none -n $NUM_COLZA_PROCS -N $NUM_COLZA_PROCS_PER_NODE -e LD_PRELOAD=$MPI_WRAPPERS -p ${PDOMAIN} \
+aprun -cc none -n $NUM_COLZA_PROCS -N $NUM_COLZA_PROCS_PER_NODE -e LD_PRELOAD=$MPI_WRAPPERS -e OMP_NUM_THREADS=60 -p ${PDOMAIN} \
     bedrock $PROTOCOL -c $BEDROCK_CONFIG -v trace 1> $BEDROCK_OUT 2> $BEDROCK_ERR &
 BEDROCK_PID=$!
 
@@ -102,7 +112,7 @@ AMR_WIND_INPUT=$HERE/input/240_process_scale.damBreak.i
 AMRWIND_OUT="amrwind.out"
 AMRWIND_ERR="amrwind.err"
 
-aprun -n $NUM_AMRWIND_PROCS -N $NUM_AMRWIND_PROCS_PER_NODE -cc none -p $PDOMAIN \
+aprun -n $NUM_AMRWIND_PROCS -N $NUM_AMRWIND_PROCS_PER_NODE -cc none -p $PDOMAIN -e OMP_NUM_THREADS=1 \
     $AMR_WIND $AMR_WIND_INPUT 1> $AMRWIND_OUT 2> $AMRWIND_ERR
 
 print_log "Shutting down servers"

@@ -139,6 +139,7 @@ function install_amr_wind {
              -DCMAKE_INSTALL_PREFIX:PATH=$AMRWIND_PREFIX_PATH \
              -DAMR_WIND_ENABLE_COLZA:BOOL=ON \
              -DAMR_WIND_ENABLE_MPI:BOOL=ON \
+             -DAMR_WIND_ENABLE_OPENMP:BOOL=ON \
              -DCMAKE_CXX_COMPILER=CC \
              -DCMAKE_C_COMPILER=cc
     make -j20

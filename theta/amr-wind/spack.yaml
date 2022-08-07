@@ -1,7 +1,7 @@
 spack:
   specs:
   - cmake
-  - ascent@0.8.0+vtkh~openmp~test~fortran+mpi
+  - ascent@0.8.0+vtkh+openmp~test~fortran+mpi
   - vtk-m+mpi
   - mochi-colza@main+bedrock
   - mochi-mona@main+mpi

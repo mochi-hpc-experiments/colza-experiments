@@ -24,7 +24,12 @@
             "name": "colza_group",
             "bootstrap": "mpi|join",
             "group_file": "colza.ssg",
-            "pool": "__progress__"
+            "pool": "__progress__",
+            "swim" : {
+                "period_length_ms" : 500,
+                "suspect_timeout_periods" : 3,
+                "subgroup_member_count" : 1
+            }
         }
     ],
     "mona": [
@@ -52,7 +57,10 @@
                         "type": "ascent",
                         "config": {
                             "ascent_options": {
-                                "actions_file": "../actions/default.yaml"
+                                "actions_file": "../actions/default.yaml",
+                                "runtime/type": "ascent",
+                                "runtime/vtkm/backend": "openmp",
+                                "runtime/backend": "openmp"
                             },
                             "comm_type": "mona",
                             "log_wrapped_calls": false
